@@ -6,7 +6,8 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game of Life Registration</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 </head>
 
 <body>
@@ -21,7 +22,7 @@
             <h2>Регистрация</h2>
         </div>
 
-        <form action="registration.php" method="POST">
+        <form action="../php/registration.php" method="POST">
             <input type="hidden" name="action" value="register">
 
             <div class="form-input">
@@ -41,7 +42,7 @@
                     <span>Зарегистрироваться</span>
             </div>
             <div class="title">
-                <h5>Уже зарегистрированы?<a href="/signin" class="signin-link">Войдите здесь.</a></h5>
+                <h6>Уже зарегистрированы?<a href="/signin" class="signin-link">Войдите здесь.</a></h6>
             </div>
         </form>
     </div>
@@ -52,7 +53,7 @@
             <h2>Вход</h2>
         </div>
 
-        <form action="registration.php" method="POST">
+        <form action="../php/registration.php" method="POST">
             <input type="hidden" name="action" value="signin">
 
             <div class="form-input">
@@ -79,7 +80,7 @@
         </label>
     </div>
 
-    <script src="theme-switch.js"></script>
+    <script src="../static/js/theme-switch.js"></script>
 
 </body>
 

@@ -1,5 +1,5 @@
 <?php
 // index.php
-header('Location: templates/schedule.html');
+header('Location: Registration_page/templates/registration.html');
 exit;
 ?>
