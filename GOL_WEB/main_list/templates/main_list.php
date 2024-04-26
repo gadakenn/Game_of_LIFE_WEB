@@ -14,15 +14,17 @@ if (isset($_SESSION['user'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game of Life - Новая игра</title>
+    <title>Game of Life</title>
+
     <link rel="stylesheet" href="../static/css/style.css">
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 </head>
 <body>
     <div class="blur-background"></div>
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
-            
+    
             <a class="navbar-brand" href="/">
                 <div class="neon"> 
                     <span>G</span><span>a</span><span>m</span><span>e</span>
@@ -63,7 +65,7 @@ if (isset($_SESSION['user'])) {
         </button>
         <h3>Ваши игры</h3>
     </div>
-
+    <main class="table" id="customers_table">
     <section class="table__body">
         <table>
             <thead>
@@ -105,7 +107,7 @@ if (isset($_SESSION['user'])) {
             </tbody>
         </table>
     </section>
-     
+</main>
     <div class="theme-switcher-wrapper">
         <label class="theme-switcher-label">
             <input type="checkbox" id="theme-switcher" class="theme-switcher">
@@ -115,5 +117,6 @@ if (isset($_SESSION['user'])) {
     <script src="../static/js/bootstrap.bundle.min.js"></script>
     <script src="../static/js/game.js"></script>
     <script src="../static/js/theme-switch.js"></script>
+    <script src="../static/js/table_script.js"></script>
 </body>
 </html>

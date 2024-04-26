@@ -33,30 +33,63 @@ function loadRoundData() {
     .catch(error => console.error('Ошибка при получении данных:', error));
 }
 
-// Обновляет интерфейс для отображения текущего раунда
+
 function updateUIForRound(data) {
   console.log(data);
   const questionContainer = document.getElementById('question');
   const form = document.getElementById('answers-form');
   console.log(data.roundId);
 
-  questionContainer.textContent = data.question;
+  questionContainer.innerHTML = data.question;
+
   form.innerHTML = ''; // Очищаем форму от предыдущих элементов
+  if (data.type === 'fill_multiple') {
+    data.options.forEach(option => {
+      const wrapper = document.createElement('div'); // Создаем блочный элемент для группировки label и input
+      const label = document.createElement('label');
+      label.textContent = option.option_text;
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.name = `option_${option.id}`;
+      input.required = true;
+  
+      wrapper.appendChild(label);
+      wrapper.appendChild(input);
+      form.appendChild(wrapper); // Добавляем wrapper вместо отдельных label и input
+    });
+  } else if (data.type === 'story') {
+    data.options.forEach(option => {
+      const wrapper = document.createElement('div');
+      if (option.type === 'radio') {
+        const input = document.createElement('input');
+        const label = document.createElement('label');
 
-  // Динамически создаем элементы формы для ответов
-  data.options.forEach(option => {
-    const wrapper = document.createElement('div'); // Создаем блочный элемент для группировки label и input
-    const label = document.createElement('label');
-    label.textContent = option.option_text;
-    const input = document.createElement('input');
-    input.type = 'number';
-    input.name = `option_${option.id}`;
-    input.required = true;
+        input.type = 'radio';
+        input.name = 'selected_business';
+        input.value = `option_${option.id}`;
+        input.required = true;
 
-    wrapper.appendChild(label);
-    wrapper.appendChild(input);
-    form.appendChild(wrapper); // Добавляем wrapper вместо отдельных label и input
-  });
+        label.textContent = option.option_text;
+        label.appendChild(input);
+
+        wrapper.appendChild(label);
+        form.appendChild(wrapper);
+      } else if (option.type === 'fill_num') {
+        const label = document.createElement('label');
+        const input = document.createElement('input');
+
+        label.textContent = option.option_text;
+        input.type = 'number';
+        input.name = `option_${option.id}`;
+        input.required = true;
+
+        wrapper.appendChild(label);
+        wrapper.appendChild(input);
+        form.appendChild(wrapper);
+      } // Добавляем wrapper вместо отдельных label и input
+    }); 
+  }
+
 
   // Кнопка отправки ответов
   const submitButton = document.createElement('button');
@@ -90,10 +123,15 @@ function handleSubmit(form, roundId) {
   .then(data => {
     if (data.error) {
       // Показываем сообщение об ошибке
-      alert('Ошибка: ' + data.error);
+      alert('Ошибка: ' + data.error + data.data);
     } else {
+      console.log(data);
       // Показываем заработок за раунд
       alert('Заработок за раунд: ' + data.totalEarnings + ' руб.');
+      if (data.endGame) {
+        // Тут подсвечиваем кнопку для окончания игры, если раунд оказался последним
+        showEndGameButton();
+      }
     }
   })
   .catch(error => {
@@ -104,40 +142,37 @@ function handleSubmit(form, roundId) {
 }
 
 
+function showEndGameButton() {
+  const endGameButton = document.getElementById('end-game-button');
+  endGameButton.style.display = 'block'; // Сделать кнопку видимой
 
-
-
-
-table_headings.forEach((head, i) => {
-    let sort_asc = true;
-    head.onclick = () => {
-        table_headings.forEach(head => head.classList.remove('active'));
-        head.classList.add('active');
-
-        document.querySelectorAll('td').forEach(td => td.classList.remove('active'));
-        table_rows.forEach(row => {
-            row.querySelectorAll('td')[i].classList.add('active');
-        })
-
-        head.classList.toggle('asc', sort_asc);
-        sort_asc = head.classList.contains('asc') ? false : true;
-
-        sortTable(i, sort_asc);
-    }
-})
-
-
-function sortTable(column, sort_asc) {
-    [...table_rows].sort((a, b) => {
-        let first_row = a.querySelectorAll('td')[column].textContent.toLowerCase(),
-            second_row = b.querySelectorAll('td')[column].textContent.toLowerCase();
-
-        return sort_asc ? (first_row < second_row ? 1 : -1) : (first_row < second_row ? -1 : 1);
-    })
-        .map(sorted_row => document.querySelector('tbody').appendChild(sorted_row));
+  // Устанавливаем обработчик события, если он еще не был установлен
+  if (!endGameButton.getAttribute('listener')) {
+    endGameButton.addEventListener('click', endGame);
+    endGameButton.setAttribute('listener', 'true');
+  }
 }
 
-
-
-
+function endGame() {
+  fetch('../../Game/start_game.php?action=endGame', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: 'action=endGame'
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Перенаправляем пользователя на главную страницу
+      window.location.href = 'main_list.php';
+    } else {
+      // Если произошла ошибка, сообщаем о ней пользователю
+      alert('Ошибка при завершении игры: ' + data.error);
+    }
+  })
+  .catch(error => {
+    console.error('Ошибка:', error);
+  });
+}
 

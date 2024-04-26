@@ -12,7 +12,6 @@ function getRoundData($taskId) {
     $conn = dbConnect(); 
     $data = [];
     $data['roundId'] = $taskId;
-
     $taskStmt = $conn->prepare("SELECT question_text, type FROM tasks WHERE id = ?");
     $taskStmt->bind_param("i", $taskId);
     $taskStmt->execute();
@@ -20,13 +19,11 @@ function getRoundData($taskId) {
     $taskResult = $result->fetch_assoc();
     $data['question'] = $taskResult['question_text'];
     $data['type'] = $taskResult['type'];
- 
-    $optionsStmt = $conn->prepare("SELECT id, option_text FROM options WHERE task_id = ?");
+    $optionsStmt = $conn->prepare("SELECT id, option_text, type FROM options WHERE task_id = ?");
     $optionsStmt->bind_param("i", $taskId);
     $optionsStmt->execute();
     $optionsResult = $optionsStmt->get_result();
     $data['options'] = $optionsResult->fetch_all(MYSQLI_ASSOC);
-
     $conn->close();
     return $data;
 }
@@ -45,13 +42,12 @@ function startGameDB($game) {
     $stmt = $conn->prepare("INSERT INTO games (game_name, user_id, cur_round_id, current_score) VALUES (?, ?, ?, ?)");
     
     $initialScore = $game->getUser()->getBalance();
-    $id = 1;
+
     $stmt->bind_param("siii",  $gameName, $userId, $currentRoundId, $initialScore);
     $stmt->execute();
 
 
     if ($stmt->error) {
-      
         echo "Ошибка при добавлении игры: " . $stmt->error;
         return false;
     }
@@ -61,15 +57,55 @@ function startGameDB($game) {
     return $conn->insert_id;
 }
 
-// startGameDB($game);
+
+function updateBalanceDB($gameId, $currentRoundId) {
+    $conn = dbConnect();
+    $user = unserialize($_SESSION['user']);
+    $balance = $user->getBalance(); 
+    // Подготовка запроса на обновление
+    $stmt = $conn->prepare("UPDATE games SET current_score = ?, cur_round_id = ? WHERE id = ?");
+    if (!$stmt) {
+        echo "Ошибка при подготовке запроса: " . $conn->error;
+        return false;
+    }
+
+    // Привязка параметров к запросу
+    $stmt->bind_param("iii", $balance, $currentRoundId, $gameId);
+
+    // Выполнение запроса
+    $stmt->execute();
+
+    // Проверка на наличие ошибок при выполнении запроса
+    if ($stmt->error) {
+        echo "Ошибка при обновлении баланса: " . $stmt->error;
+        return false;
+    }
+
+    // Закрытие statement
+    $stmt->close();
+
+    // Возвращение успеха операции
+    return true;
+}
+
+$roundClasses = [
+    'SchoolWeekRound' => '1',
+    'StockBondsDeps' => '2',
+    'SummerBusinessRound' => '3'
+];
+
 if (isset($_GET['action'])) {
     if ($_GET['action'] == 'roundData') {
         $taskId = unserialize($_SESSION['currentRoundIndex']);
         $game = unserialize($_SESSION['game']);
+        $round = $game->getCurrentRound();
+        $currentRoundIndex = $game->getCurrentRoundIndex();
+        updateBalanceDB($game->game_id, $currentRoundIndex);
         $game->nextRound();
         $currentRoundIndex = $game->getCurrentRoundIndex();
         $_SESSION['currentRoundIndex'] = serialize($currentRoundIndex);
-        echo json_encode(getRoundData($taskId));
+        $_SESSION['game'] = serialize($game);
+        echo json_encode(getRoundData($roundClasses[$round]));
     } elseif ($_GET['action'] == 'gamesData') {
         echo getGameData();
     }

@@ -70,7 +70,7 @@ class UserHandler {
 
 
 $userHandler = new UserHandler('localhost', 'root', 'root', 'GOL_web_bd');
-
+// var_dump($_POST);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'];
 

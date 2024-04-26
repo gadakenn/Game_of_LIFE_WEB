@@ -32,7 +32,7 @@ if (isset($_SESSION['user'])) {
                         <span>O</span><span>f</span> <span>L</span><span>i</span><span>f</span><span>e</span>
                     </div>
                 </a>
-     
+
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -56,12 +56,12 @@ if (isset($_SESSION['user'])) {
                 </div>
             </div>
         </nav>
+
         <div id="earnings">
             <?php if(isset($balance)): ?>
                 <p>Текущий баланс: <?php echo htmlspecialchars(number_format($balance, 2, '.', ' ')); ?> руб.</p>
             <?php endif; ?>
         </div>
-        
         <div class="h-10 p-5 bg-body-tertiary border rounded-3">
             <div id="game-container">
                 <div id="question"></div>
@@ -73,7 +73,10 @@ if (isset($_SESSION['user'])) {
             <button class="btn" id="next-round">
                 <span>Следующий раунд</span>
             </button>
-          </div>    
+          </div>
+          <button id="end-game-button" class="btn" style="display: none;">Завершить игру</button>
+
+    
 
 <div class="theme-switcher-wrapper">
     <label class="theme-switcher-label">

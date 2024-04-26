@@ -1,5 +1,9 @@
 <?php
 // process_answers.php
+
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 function answerProcessing() {
     header('Content-Type: application/json');
 
@@ -16,8 +20,9 @@ function answerProcessing() {
     }
 
     $roundClasses = [
-        '1' => 'SchoolWeekRound',
-        '2' => 'StockBondsDeps' 
+        '1' => new SchoolWeekRound(),
+        '2' => new StockBondsDeps(),
+        '3' => new SummerBusinessRound()
     ];
 
     // Получаем roundId из $_POST
@@ -30,14 +35,15 @@ function answerProcessing() {
     }
 
     $roundClass = $roundClasses[$roundId];
-    $round = new $roundClass();
-    $round->play($user, $_POST); // Передаем $_POST напрямую, поскольку он содержит все данные из формы
+  
+    $roundClass->play($user, $_POST); // Передаем $_POST напрямую, поскольку он содержит все данные из формы
     $_SESSION['user'] = serialize($user);
     $_SESSION['game'] = serialize($game);
-    return json_encode($round->getResult());
+    return json_encode($roundClass->getResult());
 }
 
 function balanceForPage() {
+    // Тут выгружем данные по балансу для страницы каждого раунда
     session_start();
     require_once 'game.php'; 
     header('Content-Type: application/json');
@@ -51,11 +57,47 @@ function balanceForPage() {
     }
 }
 
+function endGame($gameId) {
+    require_once '../db_connect/config.php';
+    $conn = dbConnect();
+    // Обновляем статус игры на 'завершено'
+    $stmt = $conn->prepare("UPDATE games SET game_status = 'finished' WHERE id = ?");
+    $stmt->bind_param("i", $gameId);
+    $stmt->execute();
+    if ($stmt->error) {
+        echo "Ошибка при завершении игры: " . $stmt->error;
+        return false;
+    }
+    $stmt->close();
+    
+    return true;
+}
+
+function checkEndGame() {
+
+    // Получаем текущее состояние игры
+    if (isset($_SESSION['game'])) { 
+        $game = unserialize($_SESSION['game']);
+        // Проверяем, что текущий раунд - последний
+        if ($game->getCurrentRoundIndex() >= count($game->getRounds())) {
+            // Если да, завершаем игру
+            if (endGame($game->game_id)) {
+                // header('Location: ../main_list/templates/main_list.php');
+                return ['endGame' => true, 'message' => 'Игра завершена.', 'roundID' => $game->getCurrentRoundIndex()];
+            } else {
+                return ['endGame' => false, 'error' => 'Не удалось завершить игру.', 'roundID' => $game->getCurrentRoundIndex()];
+            }
+        }
+    }
+    return ['endGame' => false, 'roundID' => $game->getCurrentRoundIndex(), 'roundsCount' => count($game->getRounds())];
+}
 
 
 if (isset($_GET['action'])) {
-    if (($_GET['action']) == 'answerProcessing') {
-        echo answerProcessing();
+    if ($_GET['action'] === 'answerProcessing') {
+        $result = answerProcessing();
+        $endGameCheck = checkEndGame(); // Проверяем, не закончилась ли игра
+        echo json_encode(array_merge(json_decode($result, true), $endGameCheck));
     } elseif (($_GET['action']) == 'getBalancePage') {
         echo balanceForPage();
     }

@@ -5,21 +5,22 @@ require_once 'get_game_data.php';
 
 function start_game() {
     $user = unserialize($_SESSION['user']);
-    $game = new Game($user, 'Test_name1');
+    $game = new Game($user, $user->getName());
+
     $numRounds = 2;
 
     $roundClasses = [
-        0 => ['SchoolWeekRound'],
+        0 => ['SummerBusinessRound', 'SchoolWeekRound'],
         1 => ['StockBondsDeps'] 
     ];
 
     for ($i = 0; $i < $numRounds; $i++) {
-    
+        // Рандомно выбираем набор раундов
         $roundClass = $roundClasses[$i][array_rand($roundClasses[$i])];
         
-        $round = new $roundClass();
+        // $round = new $roundClass();
         
-        $game->addRound($round);
+        $game->addRound($roundClass);
     }
 
     $_SESSION['game'] = serialize($game);
@@ -30,17 +31,40 @@ function start_game() {
         'success' => true,
         'message' => 'Игра начата.'
     ];
-    // print_r($game->getUser()->getId());
-    startGameDB($game);
+    // print_r($game->getRounds());
+    $game->game_id = startGameDB($game);
+    $_SESSION['game'] = serialize($game);
     return json_encode($response);
 }
 
+function end_game() {
+    $game = unserialize($_SESSION['game']);
+    $curRound = unserialize($_SESSION['currentRoundIndex']);
+    updateBalanceDB($game->game_id, $curRound);
+    $user = unserialize($_SESSION['user']);
+    $user->defaultBalance();
+    $_SESSION['user'] = serialize($user);
+    $tempUser = isset($_SESSION['user']) ? $_SESSION['user'] : null;
 
-// start_game();
+    // Очищаем сессию
+    // $_SESSION = [];
+
+    // Возвращаем переменную user обратно в сессию, если она была установлена
+    if ($tempUser) {
+        $_SESSION['user'] = $tempUser;
+    }
+    $response = [
+        'success' => true,
+        'message' => 'Игра закончена.'
+    ];
+    return json_encode($response);
+}
+
 if (isset($_GET['action'])) {
     if ($_GET['action'] === 'startGame') {
         echo start_game();
+    } elseif ($_GET['action'] === 'endGame') {
+        echo end_game();
     }
 }
-exit;
 ?>
