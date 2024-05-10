@@ -7,11 +7,13 @@ function start_game() {
     $user = unserialize($_SESSION['user']);
     $game = new Game($user, $user->getName());
 
-    $numRounds = 2;
+    $numRounds = 3;
 
     $roundClasses = [
         0 => ['SummerBusinessRound', 'SchoolWeekRound'],
-        1 => ['StockBondsDeps'] 
+        1 => ['StockBondsDeps', 'BetsRound'],
+        2 => ['StartupInvestmentRound']
+
     ];
 
     for ($i = 0; $i < $numRounds; $i++) {
@@ -42,7 +44,7 @@ function end_game() {
     $curRound = unserialize($_SESSION['currentRoundIndex']);
     updateBalanceDB($game->game_id, $curRound);
     $user = unserialize($_SESSION['user']);
-    $user->defaultBalance();
+    $user->clearUserInfo();
     $_SESSION['user'] = serialize($user);
     $tempUser = isset($_SESSION['user']) ? $_SESSION['user'] : null;
 

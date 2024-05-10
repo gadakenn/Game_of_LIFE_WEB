@@ -22,7 +22,9 @@ function answerProcessing() {
     $roundClasses = [
         '1' => new SchoolWeekRound(),
         '2' => new StockBondsDeps(),
-        '3' => new SummerBusinessRound()
+        '3' => new SummerBusinessRound(),
+        '4' => new StartupInvestmentRound(),
+        '5' => new BetsRound()
     ];
 
     // Получаем roundId из $_POST
@@ -79,11 +81,11 @@ function checkEndGame() {
     if (isset($_SESSION['game'])) { 
         $game = unserialize($_SESSION['game']);
         // Проверяем, что текущий раунд - последний
-        if ($game->getCurrentRoundIndex() >= count($game->getRounds())) {
+        if ($game->getCurrentRoundIndex() + 1 >= count($game->getRounds())) {
             // Если да, завершаем игру
             if (endGame($game->game_id)) {
                 // header('Location: ../main_list/templates/main_list.php');
-                return ['endGame' => true, 'message' => 'Игра завершена.', 'roundID' => $game->getCurrentRoundIndex()];
+                return ['endGame' => true, 'endGameMessage' => 'Игра завершена.', 'roundID' => $game->getCurrentRoundIndex()];
             } else {
                 return ['endGame' => false, 'error' => 'Не удалось завершить игру.', 'roundID' => $game->getCurrentRoundIndex()];
             }

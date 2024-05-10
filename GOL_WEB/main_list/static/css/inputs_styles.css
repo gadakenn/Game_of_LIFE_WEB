@@ -1,0 +1,96 @@
+#answers-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.options-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 20px; /* Добавим отступ снизу перед числовыми полями */
+}
+
+.option-wrapper {
+    flex-basis: calc(33.333% - 10px);
+    margin: 5px;
+}
+
+
+
+.option-wrapper {
+    display: flex;
+    flex-direction: column; /* Поля располагаем вертикально внутри контейнера */
+    align-items: center; /* Центрировать метку и поле ввода внутри обертки */
+    /* text-align: center; */
+    width: 50%; /* Измените ширину контейнера по вашему усмотрению */
+    margin: 5px 0; /* Добавить вертикальный отступ между обертками */
+    border: 1px solid #ccc; /* Добавьте границу для визуального выделения */
+    border-radius: 8px; /* Слегка скруглите углы */
+    background-color: #f9f9f9; /* Измените цвет фона при необходимости */
+}
+
+#question {
+    margin: 20px auto; /* Центрировать блок по горизонтали и добавить вертикальные отступы */
+    padding: 15px; /* Внутренние отступы вокруг содержимого */
+    width: 80%; /* Задайте ширину блока, например, 80% от ширины страницы */
+    box-sizing: border-box; /* Убедиться, что ширина блока включает отступы */
+    border: 1px solid #ccc; /* Добавьте границу для визуального выделения */
+    border-radius: 8px; /* Слегка скруглите углы */
+    background-color: #f9f9f9; /* Измените цвет фона при необходимости */
+}
+
+
+
+
+h1, h2 {
+    text-align: center; /* Центрирует текст внутри заголовка */
+    margin: 0 auto; /* Центрирует заголовок по горизонтали */
+    width: 100%; /* Убедитесь, что заголовок занимает всю ширину родительского контейнера */
+    padding: 10px 0; /* Добавьте отступ сверху и снизу для лучшей читаемости */
+}
+
+.inputs-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Центрирует дочерний div внутри контейнера по горизонтали */
+    gap: 10px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.inputs-container > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Центрирует элементы внутри дочернего div по горизонтали */
+    width: 60%; /* Ширина дочернего div, отцентрированного в .inputs-container */
+}
+
+.inputs-container label,
+.inputs-container input {
+    width: 50%; /* Растягивает label и input на всю ширину контейнера */
+}
+
+.inputs-container label {
+    text-align: center;
+}
+.inputs-container input {
+    padding: 8px;
+    border: 1px solid rgb(131, 92, 178);
+    border-radius: 1rem;
+    box-sizing: border-box; /* Убедиться, что ширина учитывает отступы */
+}
+
+
+
+.submit-button-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+}
+
+#answers-form button {
+    padding: 10px 20px;
+}
+
+

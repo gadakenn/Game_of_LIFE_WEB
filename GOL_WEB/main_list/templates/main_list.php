@@ -15,17 +15,18 @@ if (isset($_SESSION['user'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game of Life</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 
     <link rel="stylesheet" href="../static/css/style.css">
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  
 </head>
 <body>
     <div class="blur-background"></div>
-    <nav class="navbar navbar-expand-lg">
+    <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container-fluid">
     
-            <a class="navbar-brand" href="/">
+            <a class="navbar-brand" href="main_list.php">
                 <div class="neon"> 
                     <span>G</span><span>a</span><span>m</span><span>e</span>
                     <span>O</span><span>f</span> <span>L</span><span>i</span><span>f</span><span>e</span>
@@ -35,7 +36,12 @@ if (isset($_SESSION['user'])) {
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-
+            <div class="theme-switcher-wrapper">
+                <label class="theme-switcher-label">
+                    <input type="checkbox" id="theme-switcher" class="theme-switcher">
+                    <span class="slider round"></span>
+                </label>
+            </div>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a href="#" class="nav-link active">Рейтинг</a></li>
@@ -55,6 +61,18 @@ if (isset($_SESSION['user'])) {
             </div>
         </div>
     </nav>
+    <div class="news-container">
+    <div class="news-heading">Новости</div>
+    <div class="news">
+        <a href="#" class="news-single" data-analysis="Аналитика: фондовый рынок вскоре рухнет." onclick="showAnalysis(this)">Фондовый рынок скоро упадет</a>
+        <a href="#" class="news-single" data-analysis="Аналитика: восстановление экономики идет быстрее ожидаемого." onclick="showAnalysis(this)">Экономика восстанавливается</a>
+        <a href="#" class="news-single" data-analysis="Аналитика: новые технологии изменят промышленность." onclick="showAnalysis(this)">Технологические инновации</a>
+    </div>
+</div>
+<div id="analysis-container" class="card" style="display:none;"></div>
+
+
+
     <div class="game-container">
         <div class="title">
             <h2>Добро пожаловать в Game of Life, <?php echo htmlspecialchars($username); ?>!</h2>
@@ -92,7 +110,7 @@ if (isset($_SESSION['user'])) {
                     echo "<tr>";
                     echo "<td>" . htmlspecialchars($row['id']) . "</td>";
                     echo "<td>" . htmlspecialchars($row['game_name']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['current_score']) . "</td>";
+                    echo "<td>" . htmlspecialchars(number_format($row['current_score'], 2, '.', ' ')) . "</td>";
                     // Преобразуйте дату из timestamp, если она хранится в таком формате, или добавьте, как есть, если она в нормальном формате
                     echo "<td>" . htmlspecialchars($row['date']) . "</td>"; // Замените 'date_column' на название вашего столбца с датой
                     echo "</tr>";
@@ -108,15 +126,12 @@ if (isset($_SESSION['user'])) {
         </table>
     </section>
 </main>
-    <div class="theme-switcher-wrapper">
-        <label class="theme-switcher-label">
-            <input type="checkbox" id="theme-switcher" class="theme-switcher">
-            <span class="slider round"></span>
-        </label>
-    </div>
+
+
     <script src="../static/js/bootstrap.bundle.min.js"></script>
-    <script src="../static/js/game.js"></script>
+
     <script src="../static/js/theme-switch.js"></script>
     <script src="../static/js/table_script.js"></script>
+    <script src="../static/js/news_ticker.js"></script>
 </body>
 </html>

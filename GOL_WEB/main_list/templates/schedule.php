@@ -3,7 +3,9 @@ session_start();
 require_once '../../Game/game.php';
 if (isset($_SESSION['user'])) {
     $user = unserialize($_SESSION['user']);
-    $balance = $user->getBalance(); // метод getBalance() должен быть определен в вашем классе User
+    $balance = $user->getBalance();
+    $salary = $user->getSalary();
+    $spending = $user->getSpending(); // метод getBalance() должен быть определен в вашем классе User
 } else {
     // Пользователь не авторизован, поэтому делаем редирект на страницу входа или регистрации
     header('Location: login.php');
@@ -18,15 +20,17 @@ if (isset($_SESSION['user'])) {
     <title>Игра "Распределение времени"</title>
 </head>
 <body>
-    <link rel="stylesheet" href="../static/css/style.css">
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="../static/css/inputs_styles.css">
 
     <body>
         <div class="blur-background"></div>
-        <nav class="navbar navbar-expand-lg">
+        <nav class="navbar navbar-expand-lg fixed-top">
             <div class="container-fluid">
                 
-                <a class="navbar-brand" href="/">
+                <a class="navbar-brand" href="main_list.php">
                     <div class="neon"> 
                         <span>G</span><span>a</span><span>m</span><span>e</span>
                         <span>O</span><span>f</span> <span>L</span><span>i</span><span>f</span><span>e</span>
@@ -36,7 +40,12 @@ if (isset($_SESSION['user'])) {
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-    
+                <div class="theme-switcher-wrapper">
+                <label class="theme-switcher-label">
+                    <input type="checkbox" id="theme-switcher" class="theme-switcher">
+                    <span class="slider round"></span>
+                </label>
+            </div>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item"><a href="#" class="nav-link active">Рейтинг</a></li>
@@ -56,13 +65,32 @@ if (isset($_SESSION['user'])) {
                 </div>
             </div>
         </nav>
-
+        <div class="news-container">
+    <div class="news-heading">Новости</div>
+    <div class="news">
+        <a href="#" class="news-single" data-analysis="Аналитика: фондовый рынок вскоре рухнет." onclick="showAnalysis(this)">Фондовый рынок скоро упадет</a>
+        <a href="#" class="news-single" data-analysis="Аналитика: восстановление экономики идет быстрее ожидаемого." onclick="showAnalysis(this)">Экономика восстанавливается</a>
+        <a href="#" class="news-single" data-analysis="Аналитика: новые технологии изменят промышленность." onclick="showAnalysis(this)">Технологические инновации</a>
+    </div>
+</div>
+<div id="analysis-container" class="card" style="display:none;"></div>
+    </div>
         <div id="earnings">
             <?php if(isset($balance)): ?>
                 <p>Текущий баланс: <?php echo htmlspecialchars(number_format($balance, 2, '.', ' ')); ?> руб.</p>
             <?php endif; ?>
         </div>
-        <div class="h-10 p-5 bg-body-tertiary border rounded-3">
+
+        <div id="salary-spending">
+            <?php if(isset($salary)): ?>
+                <p>Доходы: +<?php echo htmlspecialchars(number_format($balance, 2, '.', ' ')); ?> руб.</p>
+            <?php endif; ?>
+            <?php if(isset($spending)): ?>
+                <p>Расходы: <?php echo htmlspecialchars(number_format($balance, 2, '.', ' ')); ?> руб.</p>
+            <?php endif; ?>
+        </div>
+
+        <!-- <div class="h-10 p-5 bg-body-tertiary border rounded-3"> -->
             <div id="game-container">
                 <div id="question"></div>
                 <form id="answers-form">
@@ -73,18 +101,12 @@ if (isset($_SESSION['user'])) {
             <button class="btn" id="next-round">
                 <span>Следующий раунд</span>
             </button>
-          </div>
+          <!-- </div> -->
           <button id="end-game-button" class="btn" style="display: none;">Завершить игру</button>
 
     
-
-<div class="theme-switcher-wrapper">
-    <label class="theme-switcher-label">
-        <input type="checkbox" id="theme-switcher" class="theme-switcher">
-        <span class="slider round"></span>
-    </label>
-</div>
 <script src="../static/js/game.js?v=1"></script>
 <script src="../static/js/theme-switch.js?v=1"></script>
+<script src="../static/js/news_ticker.js"></script>
 </body>
 </html>

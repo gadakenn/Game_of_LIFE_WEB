@@ -31,6 +31,7 @@ function getRoundData($taskId) {
 function getGameData() {
 
 }
+
 function startGameDB($game) {
     $conn = dbConnect(); 
    
@@ -88,23 +89,31 @@ function updateBalanceDB($gameId, $currentRoundId) {
     return true;
 }
 
-$roundClasses = [
+$roundClasses = [   // соотношение классов раундов и индексов из бд
     'SchoolWeekRound' => '1',
     'StockBondsDeps' => '2',
-    'SummerBusinessRound' => '3'
+    'SummerBusinessRound' => '3',
+    'StartupInvestmentRound' => '4',
+    'BetsRound' => '5'
 ];
 
 if (isset($_GET['action'])) {
     if ($_GET['action'] == 'roundData') {
-        $taskId = unserialize($_SESSION['currentRoundIndex']);
         $game = unserialize($_SESSION['game']);
         $round = $game->getCurrentRound();
         $currentRoundIndex = $game->getCurrentRoundIndex();
-        updateBalanceDB($game->game_id, $currentRoundIndex);
-        $game->nextRound();
-        $currentRoundIndex = $game->getCurrentRoundIndex();
-        $_SESSION['currentRoundIndex'] = serialize($currentRoundIndex);
-        $_SESSION['game'] = serialize($game);
+    
+        // Проверяем, пришел ли параметр next и равен ли он 'true'
+        if (isset($_GET['next']) && $_GET['next'] == 'true') {
+            $game->nextRound(); // Переходим к следующему раунду
+            $currentRoundIndex = $game->getCurrentRoundIndex();
+            $round = $game->getCurrentRound();
+            updateBalanceDB($game->game_id, $currentRoundIndex);
+            $_SESSION['currentRoundIndex'] = serialize($currentRoundIndex);
+            $_SESSION['game'] = serialize($game);
+        }
+    
+        // updateBalanceDB($game->game_id, $currentRoundIndex);
         echo json_encode(getRoundData($roundClasses[$round]));
     } elseif ($_GET['action'] == 'gamesData') {
         echo getGameData();
