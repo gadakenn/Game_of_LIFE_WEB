@@ -5,7 +5,7 @@ require __DIR__ . '/vendor/autoload.php';
 use Orhanerday\OpenAi\OpenAi;
 
 
-$open_ai_key = 'sk-proj-d2cd86VeGFHcNxh13gXaT3BlbkFJuCJsXTl5yyZRUUE9IcYc';
+// $open_ai_key = ;
 
 
 $open_ai = new OpenAi($open_ai_key);
