@@ -7,24 +7,6 @@ function start_game() {
     $user = unserialize($_SESSION['user']);
     $game = new Game($user, $user->getName());
 
-    $numRounds = 3;
-
-    $roundClasses = [
-        0 => ['SummerBusinessRound', 'SchoolWeekRound'],
-        1 => ['StockBondsDeps', 'BetsRound'],
-        2 => ['StartupInvestmentRound']
-
-    ];
-
-    for ($i = 0; $i < $numRounds; $i++) {
-        // Рандомно выбираем набор раундов
-        $roundClass = $roundClasses[$i][array_rand($roundClasses[$i])];
-        
-        // $round = new $roundClass();
-        
-        $game->addRound($roundClass);
-    }
-
     $_SESSION['game'] = serialize($game);
 
     $_SESSION['currentRoundIndex'] = serialize($game->getCurrentRoundIndex());

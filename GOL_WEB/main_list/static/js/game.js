@@ -1,6 +1,17 @@
 document.addEventListener('DOMContentLoaded', function() {
   console.log(sessionStorage.getItem('currentRoundIndex'));
   loadRoundData();
+
+  
+});
+
+
+
+// форматтер для красивого отображения чисел
+const formatter = new Intl.NumberFormat('ru-RU', {
+  style: 'decimal',        
+  minimumFractionDigits: 2, 
+  maximumFractionDigits: 2  
 });
 
 document.getElementById('next-round').addEventListener('click', function() {
@@ -9,11 +20,7 @@ document.getElementById('next-round').addEventListener('click', function() {
   .then(response => response.json())
   .then(data => {
       if(data.balance) {
-          const formatter = new Intl.NumberFormat('ru-RU', {
-            style: 'decimal',        
-            minimumFractionDigits: 2, 
-            maximumFractionDigits: 2  
-        });
+
           // Обновляем значение баланса на странице
           document.getElementById('earnings').innerHTML =
               `<p>Текущий баланс: ${formatter.format(data.balance).replace(',', '.')} руб.</p>`;
@@ -40,7 +47,7 @@ function loadRoundData(next = false) {
     .catch(error => console.error('Ошибка при получении данных:', error));
 }
 
-// тут делаем скрипт для новостей
+// тут скрипт для новостей
 let newsSingleAll = document.querySelectorAll(".news-container .news-single");
 let currentActive = 0;
 let totalNews = newsSingleAll.length;
@@ -82,6 +89,24 @@ function showAnalysis(element) {
 }
 
 
+function calculateMonthlyPayment(propertyPrice, initialPayment, interestRate) {
+  const loanAmount = propertyPrice - initialPayment;  // Основная сумма кредита
+  const monthlyInterestRate = interestRate / 12 / 100;  // Месячная процентная ставка
+  const numberOfRounds = 12;  // Фиксированное количество раундов для выплаты
+
+  let monthlyPayment;
+  if (monthlyInterestRate === 0) {
+      monthlyPayment = loanAmount / numberOfRounds;
+  } else {
+      monthlyPayment = loanAmount * 
+          (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfRounds)) /
+          (Math.pow(1 + monthlyInterestRate, numberOfRounds) - 1);
+  }
+
+  return monthlyPayment.toFixed(2);  // Округление до двух десятичных знаков
+}
+
+
 function updateUIForRound(data) {
   console.log(data);
   const questionContainer = document.getElementById('question');
@@ -104,7 +129,71 @@ function updateUIForRound(data) {
   form.appendChild(optionsContainer);
   form.appendChild(inputsContainer);
 
-  if (data.type === 'fill_multiple') {
+  if (data.type === 'mortgage_rent') {
+    data.options.forEach(option => {
+      const wrapper = document.createElement('div');
+      if (option.type === 'radio') {
+        wrapper.classList.add('option-wrapper');
+        const label = document.createElement('label');
+        label.classList.add('option-label'); // Класс для стилизации, если нужен
+    
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'selected_business';
+        input.value = `option_${option.id}`;
+        input.required = true;
+    
+        // Добавляем радио-кнопку в label
+        label.appendChild(input);
+    
+        // Добавляем HTML содержимое (список) в label после радио-кнопки
+        const contentWrapper = document.createElement('span'); // Дополнительный элемент для стилизации содержимого
+        contentWrapper.innerHTML = option.option_text;
+        label.appendChild(contentWrapper);
+    
+        wrapper.appendChild(label);
+        optionsContainer.appendChild(wrapper);
+      } else if (option.type === 'slider') {
+        const initialPaymentInput = document.createElement('input');
+        initialPaymentInput.type = 'range';
+        initialPaymentInput.name = 'option_51';
+        initialPaymentInput.min = '0';
+        initialPaymentInput.max = '10000000';  // Максимальный первоначальный взнос
+        initialPaymentInput.value = '500000';  // Предполагаемое начальное значение
+        initialPaymentInput.className = 'slider';
+        const initialPaymentLabel = document.createElement('label');
+        initialPaymentLabel.innerHTML = '<strong>Первоначальный взнос: <strong>';
+        initialPaymentLabel.appendChild(initialPaymentInput);
+        initialPaymentLabel.appendChild(document.createElement('span')).textContent = ` ${initialPaymentInput.value}`;
+    
+        // Обновление текста метки при изменении ползунка
+        initialPaymentInput.oninput = function() {
+          const propertyPrice = 10000000; // Предположим, что цена недвижимости задана заранее
+          const interestRate = 18.3; // Процентная ставка
+          const initialPayment = parseInt(this.value); // Текущее значение первоначального взноса
+      
+          // Обновляем текст метки с первоначальным взносом
+          initialPaymentLabel.children[1].textContent = ` ${this.value}`;
+      
+          // Рассчитываем и отображаем ежемесячный платеж
+          const monthlyPayment = calculateMonthlyPayment(propertyPrice, initialPayment, interestRate);
+          document.getElementById('monthlyPaymentDisplay').innerHTML = `<strong>Ежемесячный платёж: </strong>${formatter.format(monthlyPayment).replace(',', '.')} руб.`;
+      };
+      
+      // Создаём элемент для отображения ежемесячного платежа
+      const monthlyPaymentDisplay = document.createElement('div');
+      monthlyPaymentDisplay.id = 'monthlyPaymentDisplay';
+      monthlyPaymentDisplay.innerHTML = '<strong>Ежемесячный платёж:</strong> 0 руб.';
+      wrapper.appendChild(monthlyPaymentDisplay);
+        wrapper.appendChild(initialPaymentInput);
+        wrapper.appendChild(initialPaymentLabel);
+        inputsContainer.appendChild(wrapper);
+      }
+    }); 
+
+
+
+  } else if (data.type === 'fill_multiple') {
     data.options.forEach(option => {
       const wrapper = document.createElement('div'); // Создаем блочный элемент для группировки label и input
       const label = document.createElement('label');
@@ -122,18 +211,24 @@ function updateUIForRound(data) {
     data.options.forEach(option => {
       const wrapper = document.createElement('div');
       if (option.type === 'radio') {
-        wrapper.className = 'option-wrapper';
-        const input = document.createElement('input');
+        wrapper.classList.add('option-wrapper');
         const label = document.createElement('label');
-
+        label.classList.add('option-label'); // Класс для стилизации, если нужен
+    
+        const input = document.createElement('input');
         input.type = 'radio';
         input.name = 'selected_business';
         input.value = `option_${option.id}`;
         input.required = true;
-
-        label.textContent = option.option_text;
+    
+        // Добавляем радио-кнопку в label
         label.appendChild(input);
-
+    
+        // Добавляем HTML содержимое (список) в label после радио-кнопки
+        const contentWrapper = document.createElement('span'); // Дополнительный элемент для стилизации содержимого
+        contentWrapper.innerHTML = option.option_text;
+        label.appendChild(contentWrapper);
+    
         wrapper.appendChild(label);
         optionsContainer.appendChild(wrapper);
         
@@ -141,7 +236,7 @@ function updateUIForRound(data) {
         const label = document.createElement('label');
         const input = document.createElement('input');
 
-        label.textContent = option.option_text;
+        label.innerHTML = option.option_text;
         input.type = 'number';
         input.name = `option_${option.id}`;
         input.required = true;
@@ -154,7 +249,12 @@ function updateUIForRound(data) {
         label.innerHTML = option.option_text;
         wrapper.appendChild(label);
         form.appendChild(wrapper);
-      }
+      } else if (option.type === 'hint') {
+        const label = document.createElement('label');
+        label.innerHTML = option.option_text;
+        wrapper.appendChild(label);
+        form.appendChild(wrapper);
+      } 
     }); 
   } else if (data.type == 'news_round') { // тут делаем вывод для раунда, в котором необходимо анализировать новости
     const newsFeed = document.querySelector('.news');
@@ -212,8 +312,9 @@ function updateUIForRound(data) {
       } else if (option.type === 'text') {
         const label = document.createElement('label');
         label.innerHTML = option.option_text;
+        label.className = 'options-title';
         wrapper.appendChild(label);
-        form.appendChild(wrapper);
+        optionsContainer.appendChild(wrapper);
       }
     }); 
     initializeNews();
@@ -257,7 +358,7 @@ function handleSubmit(form, roundId) {
   .then(data => {
     if (data.error) {
       // Показываем сообщение об ошибке
-      alert('Ошибка: ' + data.error + data.data);
+      alert('Ошибка: ' + data.error);
     } else {
       console.log(data);
       // Показываем заработок за раунд

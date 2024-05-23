@@ -3,40 +3,47 @@
     flex-direction: column;
 }
 
+
+#game-container {
+  margin-top: 50px;
+}
 .options-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     flex-wrap: wrap;
-    margin-bottom: 20px; /* Добавим отступ снизу перед числовыми полями */
+    margin-bottom: 20px;
 }
-
-.option-wrapper {
-    flex-basis: calc(33.333% - 10px);
-    margin: 5px;
-}
-
-
 
 .option-wrapper {
     display: flex;
-    flex-direction: column; /* Поля располагаем вертикально внутри контейнера */
-    align-items: center; /* Центрировать метку и поле ввода внутри обертки */
-    /* text-align: center; */
-    width: 50%; /* Измените ширину контейнера по вашему усмотрению */
-    margin: 5px 0; /* Добавить вертикальный отступ между обертками */
-    border: 1px solid #ccc; /* Добавьте границу для визуального выделения */
-    border-radius: 8px; /* Слегка скруглите углы */
-    background-color: #f9f9f9; /* Измените цвет фона при необходимости */
+    flex-direction: column;
+    align-items: center;
+    margin: 5px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: rgba(174, 117, 182, 0.488);
+    min-width: 150px; /* Минимальная ширина для малого текста */
+    max-width: 400px; /* Максимальная ширина, чтобы не растягиваться слишком широко */
+    width: auto; /* Ширина по умолчанию, адаптируется к содержимому */
+    flex-grow: 1; /* Позволяет контейнеру расти в зависимости от содержимого */
+    color: #FFFFFF;
 }
 
+.option-label {
+    width: 100%; /* Занимает всю ширину option-wrapper */
+}
+
+
 #question {
-    margin: 20px auto; /* Центрировать блок по горизонтали и добавить вертикальные отступы */
-    padding: 15px; /* Внутренние отступы вокруг содержимого */
-    width: 80%; /* Задайте ширину блока, например, 80% от ширины страницы */
-    box-sizing: border-box; /* Убедиться, что ширина блока включает отступы */
-    border: 1px solid #ccc; /* Добавьте границу для визуального выделения */
-    border-radius: 8px; /* Слегка скруглите углы */
-    background-color: #f9f9f9; /* Измените цвет фона при необходимости */
+    margin: 20px auto;
+    padding: 15px; 
+    width: 80%; 
+    box-sizing: border-box;
+    border: 1px solid #ccc; 
+    border-radius: 8px; 
+    background-color: rgba(174, 117, 182, 0.488);
+    color: #FFFFFF;
 }
 
 
@@ -93,4 +100,89 @@ h1, h2 {
     padding: 10px 20px;
 }
 
+.slider {
+    width: 320px;
+    height: 6px;
+    background: #667c9c;
+    outline: none;
+    border-radius: 3px;
+    -webkit-appearance: none;  /* Переопределение стандартного вида для Webkit */
+    appearance: none;
+  }
+  
+  .slider::-webkit-slider-thumb {
+    appearance: none;
+    border-radius: 12px;
+    background: white;
+    height: 24px;
+    width: 24px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+  }
+  
+  .slider::-webkit-slider-thumb:hover {
+    background-color: transparent;
+    background-image: url("https://i.postimg.cc/8sQ2Z2Px/nyanimated.gif");
+    height: 32px;
+    width: 36px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 0;
+  }
+  
+  .slider::-moz-range-thumb {
+    border-radius: 12px;
+    background: white;
+    height: 24px;
+    width: 24px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+  }
+  
+  .slider::-moz-range-thumb:hover {
+    background-color: transparent;
+    background-image: url("https://i.postimg.cc/8sQ2Z2Px/nyanimated.gif");
+    height: 32px;
+    width: 36px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 0;
+  }
+  
+  .slider::-ms-thumb {
+    border-radius: 12px;
+    background: white;
+    height: 24px;
+    width: 24px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+  }
+  
+  .slider::-ms-thumb:hover {
+    background-color: transparent;
+    background-image: url("https://i.postimg.cc/8sQ2Z2Px/nyanimated.gif");
+    height: 32px;
+    width: 36px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 0;
+  }
+  
+  .slider:focus {
+    background: linear-gradient(#6F4FF2 0%, #6F4FF2 17%, #5BA9F9 17%, #5BA9F9 34%, #89F84B 34%, #89F84B 50%, #FEFD52 50%, #FEFD52 67%, #EEAC3D 67%, #EEAC3D 83%, #E44229 83%, #E44229 100%);
+  }
+  
+  #currentVal {
+    position: relative;
+    font-size: 16px;
+    font-weight: bold;
+    color: white; /* Убрал rgba(white,.3), т.к. оно не корректно */
+    width: 320px;
+    text-align: center;
+    margin-top: -40px;
+  }
+  
 

@@ -15,20 +15,27 @@ function answerProcessing() {
     if (isset($_SESSION['user'])) { 
         $user = unserialize($_SESSION['user']);  
     }
-    if (isset($_SESSION['game'])) { 
-        $game = unserialize($_SESSION['game']);
-    }
+    // if (isset($_SESSION['game'])) { 
+    //     $game = unserialize($_SESSION['game']);
+    // }
 
     $roundClasses = [
         '1' => new SchoolWeekRound(),
         '2' => new StockBondsDeps(),
         '3' => new SummerBusinessRound(),
         '4' => new StartupInvestmentRound(),
-        '5' => new BetsRound()
+        '5' => new BetsRound(),
+        '6' => new HousingDecisionRound(),
+        '7' => new EducationRound(),
+        '8' => new CareerRound(),
+        '9' => new SelfTaughtBusinessRound(),
+        '10' => new CollegeClubRound()
+
     ];
 
     // Получаем roundId из $_POST
     $roundId = $_POST['roundId'] ?? null; 
+
 
     // Проверяем, что roundId есть в массиве $roundClasses
     if (!isset($roundClasses[$roundId])) {
@@ -40,7 +47,6 @@ function answerProcessing() {
   
     $roundClass->play($user, $_POST); // Передаем $_POST напрямую, поскольку он содержит все данные из формы
     $_SESSION['user'] = serialize($user);
-    $_SESSION['game'] = serialize($game);
     return json_encode($roundClass->getResult());
 }
 
@@ -91,7 +97,7 @@ function checkEndGame() {
             }
         }
     }
-    return ['endGame' => false, 'roundID' => $game->getCurrentRoundIndex(), 'roundsCount' => count($game->getRounds())];
+    return ['endGame' => false, 'roundID' => $game->getCurrentRoundIndex(), 'roundsCount' => count($game->getRounds()), 'rounds' => $game->getRounds(), 'flag' => $game->flag];
 }
 
 

@@ -10,8 +10,8 @@ const syncPointer = ({ x: pointerX, y: pointerY }) => {
   }
   document.body.addEventListener('pointermove', syncPointer)
 
-document.addEventListener('DOMContentLoaded', (event) => {
-    const switcher = document.getElementById('theme-switcher');
+  document.addEventListener('DOMContentLoaded', (event) => {
+    const switcher = document.querySelector('.theme-switcher-wrapper .switch input');
     switcher.addEventListener('change', function() {
         if (this.checked) {
             document.body.classList.add('dark-theme');
@@ -21,13 +21,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
             localStorage.setItem('theme', 'light');
         }
     });
-});
 
-document.addEventListener('DOMContentLoaded', function() {
+    // Check the current theme from local storage
     const currentTheme = localStorage.getItem('theme');
     if (currentTheme === 'dark') {
-      document.body.classList.add('dark-theme');
-      document.getElementById('theme-switcher').checked = true;
+        document.body.classList.add('dark-theme');
+        switcher.checked = true;
     }
-  });
-  
+});
+
+
+

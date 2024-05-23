@@ -7,9 +7,32 @@ class Game {
     public $game_name;
     public $game_id;
 
-    public function __construct(User $user, $game_name) {
+    private $rounds_for_gpt = [];
+
+    public $flag = 'NO';
+    private $numRounds;
+
+    private $roundClasses = [
+        
+        0 => ['SummerBusinessRound', 'SchoolWeekRound'],
+        1 => ['BetsRound'],
+        2 => ['EducationRound'],
+        3 => ['StockBondsDeps'],
+        4 => ['StartupInvestmentRound', 'SelfTaughtBusinessRound', 'CollegeClubRound'],
+        5 => ['CareerRound'],
+        6 => ['HousingDecisionRound'],
+        
+    ];
+    public function __construct(User $user, $game_name, $numRounds = 7) {
+
         $this->user = $user;
         $this->game_name = $game_name;
+        for ($i = 0; $i < $numRounds; $i++) {
+            // Рандомно выбираем набор раундов
+            $roundClass = $this->roundClasses[$i][array_rand($this->roundClasses[$i])];
+            
+            $this->addRound($roundClass);
+        }
     }
 
     public function addUser(User $user) {
@@ -22,6 +45,10 @@ class Game {
 
     public function getRounds() {
         return $this->rounds;
+    }
+
+    public function setRounds($rounds) {
+        $this->rounds = $rounds;
     }
 
     public function playRound($roundNumber, $data) {
@@ -63,21 +90,45 @@ class Game {
         return $this->user;
     }
 
+    public function changeRound(array $find, $replace) {
+            /**
+     * Подменяет раунд из массива возможных раундов для определенного события на раунд, который определился в зависимости
+     * от выбора игрока
+     *
+     * @param array $find Массив с раундами, которые мы ищем в сформировавшейся судьбе
+     * @param string $replace Раунд для подмены
+     */
+        $initialRounds = $this->getRounds();
+    
+        foreach ($initialRounds as $index => $round) {
+            if (in_array($round, $find)) {
+                $initialRounds[$index] = $replace;
+                break; 
+            }
+        }
+    
+        // Устанавливаем обновленный массив раундов
+        $this->setRounds($initialRounds);
+        $this->flag = 'YES';
+        return $this->getRounds();
+    }
 }
 
 class User {
     private $name;
+
     private $balance;
     private $id;
 
     private $salary = [];
 
     private $spending = [];
+    private $professions_available = [];
 
     public function __construct($name, $id) {
         $this->name = $name;
         $this->id = $id;
-        $this->balance = 12000;
+        $this->balance = 12000000;
     }
 
     public function earnMoney($amount) {
@@ -97,7 +148,7 @@ class User {
     }
 
     public function defaultBalance() {
-        $this->balance = 12000;
+        $this->balance = 12000000;
     }
 
     public function getSalary() {
@@ -108,18 +159,66 @@ class User {
         return $this->spending;
     }
 
-    public function setSpending($type, $num) {
-        $this->spending[$type] = $num;
+    public function appendSpending($type, $num, $counter) {
+        $this->spending[$type] = [$num, $counter];
     }
 
-    public function setSalary($type, $num) {
-        $this->salary[$type] = $num;
+    public function appendSalary($type, $num, $counter) {
+        $this->salary[$type] = [$num, $counter];
+    }
+
+    public function setSpending($updatedSpending) {
+        $this->spending = $updatedSpending;
+    }
+
+    public function setSalary($updatedSalary) {
+        $this->salary = $updatedSalary;
     }
 
     public function clearUserInfo() {
         $this->defaultBalance();
         $this->salary = [];
         $this->spending = [];
+    }
+
+    public function setProfessionsAvailable(array $professions) {
+        $this->professions_available = $professions;
+    }
+
+    public function getProfessionsAvailable() {
+        return $this->professions_available;
+    }
+
+    public function salarySpending() {
+        /**
+         * Вычитает и добавляет к счёту игры деньги в зависимости от того, в каком из массивов находится статья расхода/заработка
+         */
+        $totalAmountMoney = 0;
+
+        $plusMoney = $this->getSalary(); // предполагается, что это массив вида ['ключ' => [число1, число2]]
+        $minusMoney = $this->getSpending(); // аналогично
+    
+        // Обработка доходов
+        foreach ($plusMoney as $key => $values) {
+            if ($values[1] > 0) { // Проверяем, что счетчик больше 0
+                $totalAmountMoney += $values[0]; // Прибавляем сумму к totalAmountMoney
+                $plusMoney[$key][1]--; // Уменьшаем Уменьшаем счётчик 
+            }
+        }
+    
+        // Обработка расходов
+        foreach ($minusMoney as $key => $values) {
+            if ($values[1] > 0) { // Проверяем, что выплаты еще не закончились
+                $totalAmountMoney -= $values[0]; // Вычитаем сумму из totalAmountMoney
+                $minusMoney[$key][1]--; // Уменьшаем счётчик 
+            }
+        }
+    
+        // Обновляем информацию о доходах и расходах
+        $this->setSalary($plusMoney);
+        $this->setSpending($minusMoney);
+    
+        $this->earnMoney($totalAmountMoney);
     }
 
 }
@@ -161,6 +260,36 @@ class Question {
     }
 }
 
+class MortgageCalculator {
+    /**
+     * Рассчитывает ежемесячный платёж по ипотеке.
+     *
+     * @param float $propertyPrice Стоимость недвижимости
+     * @param float $initialPayment Первоначальный взнос
+     * @param int $numberOfRounds Количество раундов для выплаты ипотеки (максимум 6)
+     * @param float $interestRate Годовая процентная ставка
+     * @return float Ежемесячный платеж
+     */
+    public function calculateMonthlyPayment($propertyPrice, $initialPayment, $interestRate) {
+        $loanAmount = $propertyPrice - $initialPayment;  // Основная сумма кредита
+        $monthlyInterestRate = $interestRate / 12 / 100;  // Месячная процентная ставка
+        $numberOfRounds = 12;  // Фиксированное количество раундов для выплаты
+
+        // Формула аннуитетного платежа
+        if ($monthlyInterestRate == 0) {
+            $monthlyPayment = $loanAmount / $numberOfRounds;
+        } else {
+            $monthlyPayment = $loanAmount * 
+                ($monthlyInterestRate * pow(1 + $monthlyInterestRate, $numberOfRounds)) /
+                (pow(1 + $monthlyInterestRate, $numberOfRounds) - 1);
+        }
+
+        return $monthlyPayment;
+    }
+}
+
+
+
 
 class SchoolWeekRound extends Round {
     private $probabilities = [
@@ -178,7 +307,7 @@ class SchoolWeekRound extends Round {
 
         $data = array_slice($data, 0, 5);
         $totalHoursSpent = array_sum($data);
-       
+        $counter = 0;
         if ($totalHoursSpent > $this->maxHours) {
             $this->result = ['error' => 'Превышено максимальное количество часов'];
             return;
@@ -200,13 +329,17 @@ class SchoolWeekRound extends Round {
             $randomNumber = mt_rand(1, 100);
             if ($randomNumber <= $randomProbability) {
                 $totalEarnings += 500; 
+                $counter += 1;
             }
         }
 
        
         $user->earnMoney($totalEarnings);
-        
-        $this->result = ['message' => $totalEarnings];
+        if ($totalEarnings) {
+            $this->result = ['message' => "Получено пятёрок: $counter \nВы заработали: $totalEarnings"];
+        } else {
+            $this->result = ['message' => "Вы не получили ни одной пятёрки и, к сожалению, ничего не заработали..."];
+        }
     }
 }
 
@@ -442,7 +575,7 @@ class StartupInvestmentRound extends Round {
             ]
         ];
 
-        $this->initialCapital = 1000000; // Предположим, что начальный капитал игрока составляет $1,000,000
+
     }
 
     public function play(User $user, $data) {
@@ -577,9 +710,407 @@ class BetsRound extends Round {
 }
 
 
+class EducationRound extends Round {
+    private $educationOptions;
+    private $availableEducationBusinesses = ['StartupInvestmentRound', 'SelfTaughtBusinessRound', 'CollegeClubRound'];
+
+    public function __construct() {
+        $this->educationOptions = [
+            'option_34' => ['name' => 'Университет (очное обучение)', 'cost' => 600000, 'expected_salary' => 60000],
+            'option_35' => ['name' => 'Колледж (заочное обучение)', 'cost' => 150000, 'expected_salary' => 40000],
+            'option_36' => ['name' => 'Онлайн-курсы (удаленное обучение)', 'cost' => 50000, 'expected_salary' => 45000],
+            'option_37' => ['name' => 'Самообразование (бесплатно)', 'expected_salary' => 'Зависит от успеха проектов']
+        ];
+    }
+
+    private function determineProfessions($educationKey) {
+        switch ($educationKey) {
+            case 'option_34':
+                return ['IT-специалист', 'Инженер', 'Менеджер'];
+            case 'option_35':
+                return ['Техник', 'Дизайнер', 'Администратор'];
+            case 'option_36':
+                return ['Программист', 'Веб-дизайнер', 'Маркетолог'];
+            case 'option_37':
+                return ['Фрилансер', 'Стартапер'];
+            default:
+                return [];
+        }
+    }
+
+    private function determineBusinessFuture($educationKey) {
+        switch ($educationKey) {
+            case 'option_34':
+                return 'StartupInvestmentRound';
+            case 'option_35':
+                return 'CollegeClubRound';
+            case 'option_36':
+                return 'SelfTaughtBusinessRound';
+            case 'option_37':
+                return 'SelfTaughtBusinessRound';
+            default:
+                return '';
+        }
+    }
+
+    public function play(User $user, $data) {
+        $selectedEducation = $data['selected_business'] ?? null;
+
+        if (!$selectedEducation || !array_key_exists($selectedEducation, $this->educationOptions)) {
+            $this->result = ['error' => 'Неверно выбрано образование или оно отсутствует.', 'data' => json_encode($data)];
+            return;
+        }
+
+        $education = $this->educationOptions[$selectedEducation];
+        $cost = $education['cost'] ?? 0;
+
+        if (isset($cost) && $cost > $user->getBalance()) {
+            $this->result = ['error' => 'Недостаточно средств для выбранного варианта образования.'];
+            return;
+        }
+
+        if ($cost > 0) {
+            $user->earnMoney(-$cost);
+        }
+
+        $availableProfessions = $this->determineProfessions($selectedEducation);
+        $user->setProfessionsAvailable($availableProfessions);
+
+        // Делаем подмену раунда в зависимости от выбора игрока
+        if (isset($_SESSION['game'])) {
+            $game = unserialize($_SESSION['game']);
+            $answer = $game->changeRound($this->availableEducationBusinesses, $this->determineBusinessFuture($selectedEducation));
+            $_SESSION['game'] = serialize($game);
+            $this->result = [
+                'message' => "$game->flag Вы выбрали {$education['name']}.\nСтоимость обучения: {$cost}.\nОжидаемая зарплата: {$education['expected_salary']}",
+                'cost' => $cost,
+                'expected_salary' => $education['expected_salary'],
+                'rounds' => $game->getRounds(),
+                'answer' => $answer,
+                'bus' => $this->availableEducationBusinesses,
+                'xxx' => $this->determineBusinessFuture($selectedEducation)
+            ];
+        } else {
+            $this->result = [
+                'message' => "Ошибка: сессия игры не найдена.",
+                'cost' => $cost,
+                'expected_salary' => $education['expected_salary']
+            ];
+        }
+    }
+}
 
 
+class CareerRound extends Round {
+    private $prof_idxs = [
+        "option_38" => "IT-специалист",
+        "option_39" => "Инженер",
+        "option_40" => "Менеджер",
+        "option_41" => "Техник",
+        "option_42" => "Дизайнер",
+        "option_43" => "Администратор",
+        "option_44" => "Программист",
+        "option_45" => "Веб-дизайнер",
+        "option_46" => "Маркетолог",
+        "option_47" => "Фрилансер",
+        "option_48" => "Стартапер"
+    ];
+    
+    public function play(User $user, $data) {
+        $selectedProfession = $this->prof_idxs[$data['selected_business']] ?? null;
+        $availableProfessions = $user->getProfessionsAvailable();
 
+        if (!in_array($selectedProfession, $availableProfessions)) {
+            $this->result = ['error' => 'Выбранная профессия недоступна. Пожалуйста, выберите одну из доступных вам профессий (на основе полученного образования).'];
+            return;
+        }
+
+        $user->appendSalary($selectedProfession, $this->determineSalary($selectedProfession), 100);
+
+        $this->result = [
+            'message' => "Поздравляем! Вы начали карьеру в качестве {$selectedProfession}. Ваша начальная зарплата составляет {$this->determineSalary($selectedProfession)} рублей.",
+            'profession' => $selectedProfession,
+            'salary' => $this->determineSalary($selectedProfession)
+        ];
+    }
+
+    private function determineSalary($profession) {
+        // Логика для определения зарплаты в зависимости от выбранной профессии
+        $salaries = [
+            'IT-специалист' => 60000,
+            'Инженер' => 50000,
+            'Менеджер' => 55000,
+            'Техник' => 35000,
+            'Дизайнер' => 40000,
+            'Администратор' => 30000,
+            'Программист' => 45000,
+            'Веб-дизайнер' => 40000,
+            'Маркетолог' => 38000,
+            'Фрилансер' => 30000,  // тут сделаем варьирование
+            'Стартапер' => 20000   // Зарплата может варьироваться
+        ];
+
+        return $salaries[$profession] ?? 0;
+    }
+}
+
+
+class HousingDecisionRound extends Round {
+    private $mortgageCalculator;
+
+    private $db_choices = [
+        'option_49' => 'rent',
+        'option_50' => 'mortgage'
+    ];
+
+    public function __construct() {
+        $this->mortgageCalculator = new MortgageCalculator();
+    }
+
+    public function play(User $user, $data) {
+        $choice = $this->db_choices[$data['selected_business']]; // 'mortgage' или 'rent'
+        $initialPayment = $data['option_51'] ?? 0;
+        $propertyPrice = 10000000; 
+        $interestRate = 18.3; // процентная ставка
+        $loanTermRounds = 6; // срок кредита в раундах
+
+        // Проверяем, достаточно ли у пользователя средств для первоначального взноса
+        if ($choice == 'mortgage' && $initialPayment > $user->getBalance()) {
+            $this->result = ['error' => 'Недостаточно средств для первоначального взноса по ипотеке.'];
+            return;
+        }
+
+        $user->earnMoney(-$initialPayment);
+
+        if ($choice == 'mortgage') {
+            $monthlyExpense = $this->mortgageCalculator->calculateMonthlyPayment($propertyPrice, $initialPayment, $interestRate);
+            $user->appendSpending('Ипотека', $monthlyExpense, 6);
+            $this->result = [
+                'message' => "Вы выбрали покупку квартиры в ипотеку. Первоначальный взнос: {$initialPayment} руб.\nПлатеж каждый раунд: {$monthlyExpense}",
+                'monthly_expense' => $monthlyExpense,
+                'home_ownership' => true
+            ];
+        } else {
+            // Логика для продолжения аренды
+            $monthlyExpense = $this->currentRent($user);
+            $user->appendSpending('Аренда квартиры', $monthlyExpense, 100);
+            $this->result = [
+                'message' => "$choice Вы выбрали аренду жилья. Ваша арендная плата каждый раунд: $monthlyExpense руб.",
+                'monthly_expense' => $monthlyExpense,
+                'home_ownership' => false
+            ];
+        }
+    }
+
+    private function currentRent($user) {
+        // Текущая арендная плата
+        return 40000; // Значение для примера
+    }
+}
+
+
+class SelfTaughtBusinessRound extends Round {
+    private $businessOptions;
+
+    public function __construct() {
+        $this->businessOptions = [
+            'option_53' => [
+                'name' => 'Онлайн-магазин',
+                'initial_investment' => 900000,
+                'expected_profit' => 4500000,
+                'risk_level' => 'Высокий',
+                'growth_potential' => 'Высокий'
+            ],
+            'option_54' => [
+                'name' => 'Кофейня',
+                'initial_investment' => 1800000,
+                'expected_profit' => 3600000,
+                'risk_level' => 'Средний',
+                'growth_potential' => 'Средний'
+            ],
+            'option_55' => [
+                'name' => 'Студия по созданию контента для социальных сетей',
+                'initial_investment' => 1350000,
+                'expected_profit' => 6300000,
+                'risk_level' => 'Средний',
+                'growth_potential' => 'Высокий'
+            ]
+        ];
+    }
+
+    public function play(User $user, $data) {
+        $selectedBusiness = $data['selected_business'] ?? null;
+        $marketingInvestment = $data['option_56'] ?? 0;
+        $productInvestment = $data['option_57'] ?? 0;
+        $operationsInvestment = $data['option_58'] ?? 0;
+        $totalInvestment = $marketingInvestment + $productInvestment + $operationsInvestment;
+
+        if (!$selectedBusiness || !array_key_exists($selectedBusiness, $this->businessOptions)) {
+            $this->result = ['error' => 'Не выбран или не найден выбранный бизнес.', 'data' => json_encode($data)];
+            return;
+        }
+
+        $business = $this->businessOptions[$selectedBusiness];
+
+        if ($totalInvestment < $business['initial_investment']) {
+            $this->result = ['error' => 'Недостаточно средств для первоначальных вложений.'];
+            return;
+        }
+
+        $user->earnMoney(-$totalInvestment);
+
+        $efficiency = $this->calculateEfficiency($marketingInvestment, $productInvestment, $operationsInvestment);
+        $unexpectedExpenses = mt_rand(0, 1800000);
+        $unexpectedIncome = mt_rand(0, 1350000);
+        $totalProfit = ($business['expected_profit'] * $efficiency) - $unexpectedExpenses + $unexpectedIncome;
+
+        if ($totalProfit < 0) {
+            $this->result = [
+                'message' => "Вы выбрали {$business['name']}, но неожиданно возникли расходы в размере {$unexpectedExpenses} руб., что привело к убыткам и закрытию бизнеса.",
+                'totalProfit' => $totalProfit
+            ];
+        } else {
+            $user->earnMoney($totalProfit);
+            $this->result = [
+                'message' => "Вы выбрали {$business['name']} и получили прибыль в размере {$totalProfit} руб. после учета всех расходов (непредвиденные расходы: {$unexpectedExpenses} и доходов.",
+                'totalProfit' => $totalProfit
+            ];
+        }
+    }
+
+    private function calculateEfficiency($marketing, $product, $operations) {
+        $total = $marketing + $product + $operations;
+        if ($total == 0) return 0;
+
+        $marketingEfficiency = $marketing / $total * 0.4;
+        $productEfficiency = $product / $total * 0.4;
+        $operationsEfficiency = $operations / $total * 0.2;
+
+        return $marketingEfficiency + $productEfficiency + $operationsEfficiency;
+    }
+}
+
+
+class CollegeClubRound extends Round {
+    private $clubOptions;
+
+    public function __construct() {
+        // Определяем возможные клубы и их параметры
+        $this->clubOptions = [
+            'option_60' => ['name' => 'Клуб программирования', 'initial_investment' => 50000, 'expected_profit' => 150000, 'difficulty' => 'Средний'],
+            'option_61' => ['name' => 'Клуб дизайна', 'initial_investment' => 30000, 'expected_profit' => 100000, 'difficulty' => 'Низкий'],
+            'option_62' => ['name' => 'Клуб предпринимателей', 'initial_investment' => 70000, 'expected_profit' => 200000, 'difficulty' => 'Высокий']
+        ];
+    }
+
+    private function calculateEfficiency($marketing, $equipment, $operations, $idealDistribution) {
+        $total = $marketing + $equipment + $operations;
+        if ($total == 0) return 0;
+
+        $marketingRatio = $marketing / $total;
+        $equipmentRatio = $equipment / $total;
+        $operationsRatio = $operations / $total;
+
+        // Идеальное распределение вложений
+        $idealMarketingRatio = $idealDistribution['marketing'];
+        $idealEquipmentRatio = $idealDistribution['equipment'];
+        $idealOperationsRatio = $idealDistribution['operations'];
+
+        // Рассчитываем эффективность на основе близости к идеальному распределению
+        $efficiency = 1 - (abs($idealMarketingRatio - $marketingRatio) + abs($idealEquipmentRatio - $equipmentRatio) + abs($idealOperationsRatio - $operationsRatio)) / 3;
+        return $efficiency;
+    }
+
+    public function play(User $user, $data) {
+        $selectedClub = $data['selected_business'] ?? null;
+        $marketingInvestment = $data['option_63'] ?? 0;
+        $equipmentInvestment = $data['option_64'] ?? 0;
+        $operationsInvestment = $data['option_65'] ?? 0;
+        $totalInvestment = $marketingInvestment + $equipmentInvestment + $operationsInvestment;
+
+        // Проверяем корректность введенных данных
+        if (!$selectedClub || !array_key_exists($selectedClub, $this->clubOptions)) {
+            $this->result = ['error' => 'Не выбран или не найден выбранный клуб.', 'data' => json_encode($data)];
+            return;
+        }
+
+        $club = $this->clubOptions[$selectedClub];
+
+        if ($totalInvestment < $club['initial_investment']) {
+            $this->result = ['error' => 'Недостаточно средств для первоначальных вложений.'];
+            return;
+        }
+
+ 
+        $idealDistribution = [
+            'marketing' => 0.4,
+            'equipment' => 0.4,
+            'operations' => 0.2
+        ];
+
+   
+        $user->earnMoney(-$totalInvestment);
+
+        $efficiency = $this->calculateEfficiency($marketingInvestment, $equipmentInvestment, $operationsInvestment, $idealDistribution);
+        $expectedProfit = $club['expected_profit'] * $efficiency;
+
+        // Генерация случайных событий для создания непредсказуемости
+        $unexpectedExpenses = mt_rand(0, 20000);
+        $unexpectedIncome = mt_rand(0, 15000);
+
+        $totalProfit = $expectedProfit - $unexpectedExpenses + $unexpectedIncome;
+
+        if ($totalProfit < 0) {
+            $this->result = [
+                'message' => "Вы выбрали {$club['name']}, но неожиданно возникли расходы в размере {$unexpectedExpenses} руб., что привело к убыткам и закрытию клуба.",
+                'totalProfit' => $totalProfit
+            ];
+        } else {
+            $user->earnMoney($totalProfit);
+            $this->result = [
+                'message' => "Вы выбрали {$club['name']} и получили прибыль в размере {$totalProfit} руб. после учета всех расходов и доходов.",
+                'totalProfit' => $totalProfit
+            ];
+        }
+    }
+}
+
+// Массивы раундов для различных типов образования
+
+// $selfTaughtRounds = ['selfTaughtBusinessRound', 'StartupInvestmentRound', 'adminRound'];
+
+// // Предположим, выбранное образование - самоучка
+// $selectedEducation = 'self_taught';
+// $replacementRound = 'selfTaughtBusinessRound';
+
+// $user = new User('hu', 4);
+// $game = new Game($user, 'test');
+
+
+// print_r($game->getRounds());
+
+// $game->setRounds(['test', 'test2', 'test3']);
+// print_r($game->getRounds());
+// // В зависимости от выбранного образования выбираем массив раундов
+// switch ($selectedEducation) {
+//     case 'university':
+//         $game->changeRound($selfTaughtRounds, $replacementRound);
+//         break;
+//     case 'college':
+//         $game->changeRound($selfTaughtRounds, $replacementRound);
+//         break;
+//     case 'online_courses':
+//         $game->changeRound($selfTaughtRounds, $replacementRound);
+//         break;
+//     case 'self_taught':
+//         $game->changeRound($selfTaughtRounds, $replacementRound);
+//         break;
+//     default:
+//         // Обработка неизвестного типа образования
+//         break;
+// }
+
+// print_r($game->getRounds());
 
 // $user = new User("John Doe", 1);
 // $user->earnMoney(500000); 

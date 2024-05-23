@@ -37,9 +37,9 @@ if (isset($_SESSION['user'])) {
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="theme-switcher-wrapper">
-                <label class="theme-switcher-label">
-                    <input type="checkbox" id="theme-switcher" class="theme-switcher">
-                    <span class="slider round"></span>
+                <label class="switch">
+                <input type="checkbox" id="theme-switcher">
+                    <span class="theme-slider round"></span>
                 </label>
             </div>
             <div class="collapse navbar-collapse" id="navbarNav">

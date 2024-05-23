@@ -40,13 +40,14 @@ if (isset($_SESSION['user'])) {
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="theme-switcher-wrapper">
-                <label class="theme-switcher-label">
-                    <input type="checkbox" id="theme-switcher" class="theme-switcher">
-                    <span class="slider round"></span>
-                </label>
-            </div>
+
                 <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="theme-switcher-wrapper">
+                    <label class="switch">
+                        <input type="checkbox" id="theme-switcher">
+                        <span class="theme-slider round"></span>
+                    </label>
+                </div>
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item"><a href="#" class="nav-link active">Рейтинг</a></li>
                         <li class="nav-item"><a href="#" class="nav-link active">Inventory</a></li>
@@ -82,13 +83,18 @@ if (isset($_SESSION['user'])) {
         </div>
 
         <div id="salary-spending">
-            <?php if(isset($salary)): ?>
-                <p>Доходы: +<?php echo htmlspecialchars(number_format($balance, 2, '.', ' ')); ?> руб.</p>
+            <?php if(isset($salary) && is_array($salary)): ?>
+                <?php foreach($salary as $source => $amount): ?>
+                    <p><?php echo htmlspecialchars($source); ?>: <?php echo htmlspecialchars(number_format($amount[0], 2, '.', ' ')); ?> руб.</p>
+                <?php endforeach; ?>
             <?php endif; ?>
-            <?php if(isset($spending)): ?>
-                <p>Расходы: <?php echo htmlspecialchars(number_format($balance, 2, '.', ' ')); ?> руб.</p>
+            <?php if(isset($spending) && is_array($spending)): ?>
+                <?php foreach($spending as $source => $amount): ?>
+                    <p><?php echo htmlspecialchars($source); ?>: <?php echo htmlspecialchars(number_format($amount[0], 2, '.', ' ')); ?> руб.</p>
+                <?php endforeach; ?>
             <?php endif; ?>
         </div>
+
 
         <!-- <div class="h-10 p-5 bg-body-tertiary border rounded-3"> -->
             <div id="game-container">
@@ -102,7 +108,7 @@ if (isset($_SESSION['user'])) {
                 <span>Следующий раунд</span>
             </button>
           <!-- </div> -->
-          <button id="end-game-button" class="btn" style="display: none;">Завершить игру</button>
+          <button id="end-game-button" class="btn" style="display: none;"><span>Завершить игру</span></button>
 
     
 <script src="../static/js/game.js?v=1"></script>

@@ -94,12 +94,18 @@ $roundClasses = [   // соотношение классов раундов и �
     'StockBondsDeps' => '2',
     'SummerBusinessRound' => '3',
     'StartupInvestmentRound' => '4',
-    'BetsRound' => '5'
+    'BetsRound' => '5',
+    'HousingDecisionRound' => '6',
+    'EducationRound' => '7',
+    'CareerRound' => '8',
+    'SelfTaughtBusinessRound' => '9',
+    'CollegeClubRound' => '10'
 ];
 
 if (isset($_GET['action'])) {
     if ($_GET['action'] == 'roundData') {
         $game = unserialize($_SESSION['game']);
+        $user = unserialize($_SESSION['user']);
         $round = $game->getCurrentRound();
         $currentRoundIndex = $game->getCurrentRoundIndex();
     
@@ -108,9 +114,11 @@ if (isset($_GET['action'])) {
             $game->nextRound(); // Переходим к следующему раунду
             $currentRoundIndex = $game->getCurrentRoundIndex();
             $round = $game->getCurrentRound();
+            $user->salarySpending();
             updateBalanceDB($game->game_id, $currentRoundIndex);
             $_SESSION['currentRoundIndex'] = serialize($currentRoundIndex);
             $_SESSION['game'] = serialize($game);
+            $_SESSION['user'] = serialize($user);
         }
     
         // updateBalanceDB($game->game_id, $currentRoundIndex);
