@@ -5,14 +5,14 @@ class UserHandler {
     private $db;
 
     public function __construct($dbHost, $dbUser, $dbPass, $dbName) {
-        $this->db = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
+        $this->db = new mysqli($dbHost, $dbUser, $dbPass, $dbName, 8889);
         if ($this->db->connect_error) {
             die("Connection failed: " . $this->db->connect_error);
         }
     }
 
     public function register($nickname, $email, $password) {
-        session_unset();
+        session_destroy();
         
 
         session_start();

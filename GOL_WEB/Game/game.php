@@ -7,20 +7,35 @@ class Game {
     public $game_name;
     public $game_id;
 
+    private $money_to_append = 0;
+
+    public $current_age = 12;
+
+    private $answerInfo = '';
+
     private $rounds_for_gpt = [];
 
     public $flag = 'NO';
     private $numRounds;
 
+    private $tmp_answer = [];
+
+    
     private $roundClasses = [
-        
-        0 => ['SummerBusinessRound', 'SchoolWeekRound'],
-        1 => ['BetsRound'],
-        2 => ['EducationRound'],
-        3 => ['StockBondsDeps'],
-        4 => ['StartupInvestmentRound', 'SelfTaughtBusinessRound', 'CollegeClubRound'],
-        5 => ['CareerRound'],
-        6 => ['HousingDecisionRound'],
+        0 => ['QuestionsRound'],
+        1 => ['SummerBusinessRound', 'SchoolWeekRound'],
+        2 => ['BetsRound'],
+        3 => ['EducationRound'],
+        4 => ['StockBondsDeps'],
+        5 => ['StartupInvestmentRound', 'SelfTaughtBusinessRound', 'CollegeClubRound'],
+        6 => ['CareerRound'],
+        7 => ['HousingDecisionRound'],
+        8 => ['gpt'],
+        9 => ['gpt'],
+        10 => ['gpt'],
+        11 => ['gpt'],
+        12 => ['gpt'],
+        13 => ['gpt'],
         
     ];
     public function __construct(User $user, $game_name, $numRounds = 7) {
@@ -67,6 +82,7 @@ class Game {
         }
     }
 
+
     // Метод для установки текущего раунда
     public function setCurrentRoundIndex($index) {
         if (isset($this->rounds[$index])) {
@@ -84,6 +100,7 @@ class Game {
     // Метод для перехода к следующему раунду 
     public function nextRound() {
         $this->currentRoundIndex = $this->currentRoundIndex + 1;
+        $this->current_age = $this->current_age + 3;
     }
 
     public function getUser() {
@@ -112,6 +129,50 @@ class Game {
         $this->flag = 'YES';
         return $this->getRounds();
     }
+
+    public function addRoundGPT($taskNum, $taskText, $role='assistant', $info=false, $assist_ans=false) {
+        if ($info) {
+            $this->rounds_for_gpt[] = [
+                "role" => $role,
+                "content" => "Раунд номер {$taskNum}. Инициализация игры. {$taskText}"
+            ];
+        } else {
+            if ($role == 'assistant') {
+                if ($assist_ans) {
+                    $this->rounds_for_gpt[] = [
+                        "role" => $role,
+                        "content" => "Раунд номер {$taskNum}. Результат раунда: {$taskText}"
+                    ];
+                } else {
+                    $this->rounds_for_gpt[] = [
+                        "role" => $role,
+                        "content" => "Раунд номер {$taskNum}. Текст раунда: {$taskText}"
+                    ];
+                }
+            } else {
+                $this->rounds_for_gpt[] = [
+                    "role" => $role,
+                    "content" => "Раунд номер {$taskNum}. Ответ игрока: {$taskText}"
+                ];
+            }
+        }
+    }
+
+    public function holdAnswer($taskNum, $taskText, $push=false) {
+        if ($push) {
+            $this->addRoundGPT($this->tmp_answer['taskNum'], $this->tmp_answer['content'], 'assistant', false, true);
+        } else {
+            $this->tmp_answer = [
+                "taskNum" => $taskNum,
+                "content" => $taskText
+            ];
+        }
+    }
+
+    public function getRoundGPT() {
+        return $this->rounds_for_gpt;
+        
+    }
 }
 
 class User {
@@ -125,14 +186,20 @@ class User {
     private $spending = [];
     private $professions_available = [];
 
+    private $tmp_earning = 0;
+
     public function __construct($name, $id) {
         $this->name = $name;
         $this->id = $id;
-        $this->balance = 12000000;
+        $this->balance = 1200000;
     }
 
-    public function earnMoney($amount) {
-        $this->balance += $amount;
+    public function earnMoney($amount=0, $execute=false) {
+        if ($execute) {
+            $this->balance += $this->tmp_earning;
+        } else {
+            $this->tmp_earning = $amount;
+        }
     }
 
     public function getBalance() {
@@ -408,23 +475,23 @@ class StockBondsDeps extends Round {
         );
         $user->earnMoney($futureValue);
         
-        $this->result = ['message' => $futureValue];
+        $this->result = ['message' => "В течении года, вложенная сумма приносит Вам доходность $stocksBondsReturn %\nВаш вложенный капитал приности сверху ещё $futureValue руб."];
         
     }
 
     private function getPortfolioReturn($stocksPercentage, $bondsPercentage) {
         $combinedReturns = [
-            "0/100" => 396.3,
-            "10/90" => 509.4,
-            "20/80" => 631.4,
-            "30/70" => 758.7,
-            "40/60" => 886.7,
-            "50/50" => 1009.6,
-            "60/40" => 1120.5,
-            "70/30" => 1211.5,
-            "80/20" => 1274.1,
-            "90/10" => 1299.6,
-            "100/0" => 1279.2
+            "0/100" => 22.9,
+            "10/90" => 25.92,
+            "20/80" => 29.05,
+            "30/70" => 32.05,
+            "40/60" => 35.05,
+            "50/50" => 38.13,
+            "60/40" => 41.22,
+            "70/30" => 44.36,
+            "80/20" => 47.44,
+            "90/10" => 50.46,
+            "100/0" => 50.46
         ];
         $key = "{$stocksPercentage}/{$bondsPercentage}";
 
@@ -465,12 +532,11 @@ class SummerBusinessRound extends Round {
 
 
     
-        $this->weatherForecast = $this->getWeatherForecast(); // Предполагается, что это метод возвращает прогноз погоды
+        $this->weatherForecast = $this->getWeatherForecast(); 
     }
 
     public function play(User $user, $data) {
-        // Предполагаем, что в $data приходят данные в формате:
-        // ['selected_business' => 'lemonade_stand', 'investment' => 150, 'advertising' => 50, ...]
+
 
         $selectedBusiness = $data['selected_business'] ?? null; // выбранный тип бизнеса
         $investment = $data['option_13'] ?? 0; // 
@@ -653,12 +719,12 @@ class BetsRound extends Round {
     public function __construct() {
         // Определяем возможные спортивные матчи и их коэффициенты
         $this->matchOptions = [
-            'option_26' => ['match' => 'Спартак vs Динамо', 'coefficient' => 2.0], // Победа Спартака
+            'option_26' => ['match' => 'Спартак vs Динамо', 'coefficient' => 3.8], // Победа Спартака
             'option_27' => ['match' => 'Спартак vs Динамо', 'coefficient' => 3.2], // Ничья
-            'option_28' => ['match' => 'Спартак vs Динамо', 'coefficient' => 3.8], // Победа Динамо
-            'option_30' => ['match' => 'Зенит vs ЦСКА', 'coefficient' => 1.8], // Победа Зенита
+            'option_28' => ['match' => 'Спартак vs Динамо', 'coefficient' => 1.5], // Победа Динамо
+            'option_30' => ['match' => 'Зенит vs ЦСКА', 'coefficient' => 2.1], // Победа Зенита
             'option_31' => ['match' => 'Зенит vs ЦСКА', 'coefficient' => 3.5], // Ничья
-            'option_32' => ['match' => 'Зенит vs ЦСКА', 'coefficient' => 4.0]  // Победа ЦСКА
+            'option_32' => ['match' => 'Зенит vs ЦСКА', 'coefficient' => 2.3]  // Победа ЦСКА
         ];
     }
 
@@ -726,7 +792,7 @@ class EducationRound extends Round {
     private function determineProfessions($educationKey) {
         switch ($educationKey) {
             case 'option_34':
-                return ['IT-специалист', 'Инженер', 'Менеджер'];
+                return ['IT-специалист', 'Инженер', 'Менеджер', 'Техник', 'Дизайнер', 'Администратор', 'Программист', 'Веб-дизайнер', 'Маркетолог'];
             case 'option_35':
                 return ['Техник', 'Дизайнер', 'Администратор'];
             case 'option_36':
@@ -782,7 +848,7 @@ class EducationRound extends Round {
             $answer = $game->changeRound($this->availableEducationBusinesses, $this->determineBusinessFuture($selectedEducation));
             $_SESSION['game'] = serialize($game);
             $this->result = [
-                'message' => "$game->flag Вы выбрали {$education['name']}.\nСтоимость обучения: {$cost}.\nОжидаемая зарплата: {$education['expected_salary']}",
+                'message' => "Вы выбрали {$education['name']}.\nСтоимость обучения: {$cost}.\nОжидаемая зарплата: {$education['expected_salary']}",
                 'cost' => $cost,
                 'expected_salary' => $education['expected_salary'],
                 'rounds' => $game->getRounds(),
@@ -880,11 +946,13 @@ class HousingDecisionRound extends Round {
             return;
         }
 
-        $user->earnMoney(-$initialPayment);
 
         if ($choice == 'mortgage') {
+            $user->earnMoney(-$initialPayment);
             $monthlyExpense = $this->mortgageCalculator->calculateMonthlyPayment($propertyPrice, $initialPayment, $interestRate);
-            $user->appendSpending('Ипотека', $monthlyExpense, 6);
+            if ($monthlyExpense > 0) {
+                $user->appendSpending('Ипотека', $monthlyExpense, 6);
+            }
             $this->result = [
                 'message' => "Вы выбрали покупку квартиры в ипотеку. Первоначальный взнос: {$initialPayment} руб.\nПлатеж каждый раунд: {$monthlyExpense}",
                 'monthly_expense' => $monthlyExpense,
@@ -895,7 +963,7 @@ class HousingDecisionRound extends Round {
             $monthlyExpense = $this->currentRent($user);
             $user->appendSpending('Аренда квартиры', $monthlyExpense, 100);
             $this->result = [
-                'message' => "$choice Вы выбрали аренду жилья. Ваша арендная плата каждый раунд: $monthlyExpense руб.",
+                'message' => "Вы выбрали аренду жилья. Ваша арендная плата каждый раунд: $monthlyExpense руб.",
                 'monthly_expense' => $monthlyExpense,
                 'home_ownership' => false
             ];
@@ -1075,6 +1143,87 @@ class CollegeClubRound extends Round {
     }
 }
 
+
+class SendAnswerToGPT extends Round {
+
+    public function play(User $user, $data) {
+
+
+        $game = unserialize($_SESSION['game']);
+        $data_new = $game->getRoundGPT();
+
+        $info_to_chatGPT = [
+            'ask' => $data['gpt'],
+            'story' => $data_new,
+            'user_id' => $user->getId()
+        ];
+
+        $answer = $this->call_chatgpt_answer($info_to_chatGPT);
+        $game->addRoundGPT($game->getCurrentRoundIndex(), $data['gpt'], 'user');
+        $game->addRoundGPT($game->getCurrentRoundIndex(), $answer['message']);
+        $this->result = [
+            'message' => $answer['message']
+        ];
+    }
+
+    private function call_chatgpt_answer($data) {
+        $url = 'http://localhost:8000/process_answer';
+    
+        $options = array(
+            'http' => array(
+                'header'  => "Content-type: application/json\r\n",
+                'method'  => 'POST',
+                'content' => json_encode($data),
+            ),
+        );
+    
+        $context  = stream_context_create($options);
+        $result = file_get_contents($url, false, $context);
+        if ($result === FALSE) {
+            /* Обработка ошибки */
+            return null;
+        }
+    
+        // Декодирование JSON-ответа
+        $decoded_result = json_decode($result, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+           
+            return null;
+        }
+    
+        return $decoded_result;
+    }
+}
+
+
+class QuestionsRound extends Round {
+    private $player_info;
+
+    private $sex_info = ['option_67' => 'Мужской',
+                        'option_68' => 'Женский'];
+    
+    private $risk_info = [
+        'option_71' => 'низкий',
+        'option_72' => 'средний',
+        'option_73' => 'высокий'
+    ];
+
+    public function play(User $user, $data) {
+        $sex = $this->sex_info[$data['sex']];
+        $interests = $data['option_69'];
+        $country = $data['option_70'];
+        $risk_level = $this->risk_info[$data['risk_level']];
+        $info_to_gpt = "Информация об игроке. Пол: $sex. Интересы (описаны в свободной форме): '$interests'. 
+        Желаемая страна для игры: $country. Уровень рискованности в финансовых решениях: $risk_level";
+
+        // $game = unserialize($_SESSION['game']);
+        // $game->addRoundGPT($game->getCurrentRoundIndex(), $info_to_gpt, 'user', true);
+        // $_SESSION['game'] = serialize($game);
+
+        $this->result = ['message' => "Спасибо за предоставленную информацию! Хорошей игры!"];
+    }
+
+}
 // Массивы раундов для различных типов образования
 
 // $selfTaughtRounds = ['selfTaughtBusinessRound', 'StartupInvestmentRound', 'adminRound'];
@@ -1122,6 +1271,7 @@ class CollegeClubRound extends Round {
 //     'selected_startup' => 'smart_accessories',
 //     'investment_amount' => 500000  // Пользователь инвестирует $500,000
 // ];
+
 
 // // Запуск раунда с тестовыми данными
 // $round->play($user, $testData);

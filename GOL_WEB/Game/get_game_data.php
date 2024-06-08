@@ -89,6 +89,35 @@ function updateBalanceDB($gameId, $currentRoundId) {
     return true;
 }
 
+function call_chatgpt($data) {
+    $url = 'http://localhost:8000/run_chatgpt';
+
+    $options = array(
+        'http' => array(
+            'header'  => "Content-type: application/json\r\n",
+            'method'  => 'POST',
+            'content' => json_encode($data),
+        ),
+    );
+
+    $context  = stream_context_create($options);
+    $result = file_get_contents($url, false, $context);
+    if ($result === FALSE) {
+        /* Обработка ошибки */
+        return null;
+    }
+
+    // Декодирование JSON-ответа
+    $decoded_result = json_decode($result, true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        // Обработка ошибки декодирования JSON
+        return null;
+    }
+
+    return $decoded_result;
+}
+
+
 $roundClasses = [   // соотношение классов раундов и индексов из бд
     'SchoolWeekRound' => '1',
     'StockBondsDeps' => '2',
@@ -99,30 +128,62 @@ $roundClasses = [   // соотношение классов раундов и �
     'EducationRound' => '7',
     'CareerRound' => '8',
     'SelfTaughtBusinessRound' => '9',
-    'CollegeClubRound' => '10'
+    'CollegeClubRound' => '10',
+    'QuestionsRound' => '11'
 ];
 
 if (isset($_GET['action'])) {
     if ($_GET['action'] == 'roundData') {
+        $flag = false;
         $game = unserialize($_SESSION['game']);
         $user = unserialize($_SESSION['user']);
         $round = $game->getCurrentRound();
         $currentRoundIndex = $game->getCurrentRoundIndex();
-    
+        $continue_with_gpt = false;
+
+
         // Проверяем, пришел ли параметр next и равен ли он 'true'
         if (isset($_GET['next']) && $_GET['next'] == 'true') {
+  
+            $flag = true;
             $game->nextRound(); // Переходим к следующему раунду
-            $currentRoundIndex = $game->getCurrentRoundIndex();
             $round = $game->getCurrentRound();
+            $currentRoundIndex = $game->getCurrentRoundIndex();
+            $user->earnMoney(0, true);
+            $game->holdAnswer(0, '', true);
             $user->salarySpending();
             updateBalanceDB($game->game_id, $currentRoundIndex);
-            $_SESSION['currentRoundIndex'] = serialize($currentRoundIndex);
-            $_SESSION['game'] = serialize($game);
-            $_SESSION['user'] = serialize($user);
+
+            if ($round == 'gpt') {
+                $continue_with_gpt = true;
+                $roundsGPT = $game->getRoundGPT();
+                $age = $game->current_age;
+                $info_to_chatGPT = [
+                    'age' => $age,
+                    'story' => $roundsGPT,
+                    'user_id' => $user->getId()
+                ];
+                $roundInfo = call_chatgpt($info_to_chatGPT);
+                $game->addRoundGPT($currentRoundIndex, $roundInfo['question']);
+            } else {
+                $roundInfo = getRoundData($roundClasses[$round]);
+                $game->addRoundGPT($currentRoundIndex, $roundInfo['question']);
+            }
+
+        }
+            
+
+        $_SESSION['currentRoundIndex'] = serialize($currentRoundIndex);
+        $_SESSION['game'] = serialize($game);
+        $_SESSION['user'] = serialize($user);
+
+        if ($flag) {
+            echo json_encode(array_merge($roundInfo, $game->getRoundGPT()));
+        } else {
+            echo json_encode(getRoundData($roundClasses[$round]));
         }
     
-        // updateBalanceDB($game->game_id, $currentRoundIndex);
-        echo json_encode(getRoundData($roundClasses[$round]));
+        // echo json_encode(getRoundData($roundClasses[$round]));
     } elseif ($_GET['action'] == 'gamesData') {
         echo getGameData();
     }

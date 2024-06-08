@@ -15,9 +15,7 @@ function answerProcessing() {
     if (isset($_SESSION['user'])) { 
         $user = unserialize($_SESSION['user']);  
     }
-    // if (isset($_SESSION['game'])) { 
-    //     $game = unserialize($_SESSION['game']);
-    // }
+
 
     $roundClasses = [
         '1' => new SchoolWeekRound(),
@@ -29,7 +27,9 @@ function answerProcessing() {
         '7' => new EducationRound(),
         '8' => new CareerRound(),
         '9' => new SelfTaughtBusinessRound(),
-        '10' => new CollegeClubRound()
+        '10' => new CollegeClubRound(),
+        'gpt' => new SendAnswerToGPT(),
+        '11' => new QuestionsRound()
 
     ];
 
@@ -45,9 +45,47 @@ function answerProcessing() {
 
     $roundClass = $roundClasses[$roundId];
   
-    $roundClass->play($user, $_POST); // Передаем $_POST напрямую, поскольку он содержит все данные из формы
+    $roundClass->play($user, $_POST);
+    $answer = $roundClass->getResult();
+
+    if (isset($_SESSION['game'])) { 
+        $game = unserialize($_SESSION['game']);
+        if (isset($answer['message'])) {
+            $game->holdAnswer($game->getCurrentRoundIndex(), $answer['message']);
+        }
+    }
+
+    $_SESSION['game'] = serialize($game);
     $_SESSION['user'] = serialize($user);
-    return json_encode($roundClass->getResult());
+    return json_encode($answer);
+}
+
+function call_chatgpt_answer($data) {
+    $url = 'http://localhost:8000/process_answer';
+
+    $options = array(
+        'http' => array(
+            'header'  => "Content-type: application/json\r\n",
+            'method'  => 'POST',
+            'content' => json_encode($data),
+        ),
+    );
+
+    $context  = stream_context_create($options);
+    $result = file_get_contents($url, false, $context);
+    if ($result === FALSE) {
+        /* Обработка ошибки */
+        return null;
+    }
+
+    // Декодирование JSON-ответа
+    $decoded_result = json_decode($result, true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        // Обработка ошибки декодирования JSON
+        return null;
+    }
+
+    return $decoded_result;
 }
 
 function balanceForPage() {
@@ -63,6 +101,21 @@ function balanceForPage() {
     } else {
         return json_encode(['error' => 'User not logged in']);
     }
+}
+
+function getSalarySpending() {
+
+    session_start();
+    require_once 'game.php';
+    if (isset($_SESSION['user'])) {
+        $user = unserialize($_SESSION['user']);
+        $salary = $user->getSalary();
+        $spending = $user->getSpending();
+        return json_encode(['salary' => $salary, 'spending' => $spending]);
+    } else {
+        return json_encode(['error' => 'User not logged in']);
+    }
+
 }
 
 function endGame($gameId) {
@@ -90,7 +143,6 @@ function checkEndGame() {
         if ($game->getCurrentRoundIndex() + 1 >= count($game->getRounds())) {
             // Если да, завершаем игру
             if (endGame($game->game_id)) {
-                // header('Location: ../main_list/templates/main_list.php');
                 return ['endGame' => true, 'endGameMessage' => 'Игра завершена.', 'roundID' => $game->getCurrentRoundIndex()];
             } else {
                 return ['endGame' => false, 'error' => 'Не удалось завершить игру.', 'roundID' => $game->getCurrentRoundIndex()];
@@ -108,5 +160,7 @@ if (isset($_GET['action'])) {
         echo json_encode(array_merge(json_decode($result, true), $endGameCheck));
     } elseif (($_GET['action']) == 'getBalancePage') {
         echo balanceForPage();
+    } elseif (($_GET['action']) == 'getSalarySpending') {
+        echo getSalarySpending();
     }
 }

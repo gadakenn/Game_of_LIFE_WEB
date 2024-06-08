@@ -30,9 +30,7 @@
     color: #FFFFFF;
 }
 
-.option-label {
-    width: 100%; /* Занимает всю ширину option-wrapper */
-}
+
 
 
 #question {
@@ -85,6 +83,21 @@ h1, h2 {
     border: 1px solid rgb(131, 92, 178);
     border-radius: 1rem;
     box-sizing: border-box; /* Убедиться, что ширина учитывает отступы */
+    background-color: #c2a5c663;
+    color: white;
+}
+
+.wide-textarea {
+  width: 80%; /* Делает текстовое поле занимать всю ширину родительского элемента */
+  height: 100px; /* Устанавливает фиксированную высоту */
+  padding: 10px; /* Добавляет отступы внутри поля */
+  font-size: 16px; /* Увеличивает размер шрифта для удобства ввода */
+  box-sizing: border-box; /* Учитывает отступы и границы в общей ширине элемента */
+  border: 1px solid rgb(131, 92, 178);
+  background-color: #c2a5c663;
+  border-radius: 1rem; /* Закругляет углы */
+  resize: vertical; /* Позволяет изменять размер только по вертикали */
+  color: white;
 }
 
 
@@ -98,6 +111,9 @@ h1, h2 {
 
 #answers-form button {
     padding: 10px 20px;
+    color: rgb(255, 255, 255);
+    border-radius: 8px;
+    background-color: #12eaea60;
 }
 
 .slider {
@@ -184,5 +200,278 @@ h1, h2 {
     text-align: center;
     margin-top: -40px;
   }
-  
 
+  .input-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* margin: 5px; */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: rgba(174, 117, 182, 0.488);
+    min-width: 150px; /* Минимальная ширина для малого текста */
+    max-width: 900px; /* Максимальная ширина, чтобы не растягиваться слишком широко */
+    width: auto; /* Ширина по умолчанию, адаптируется к содержимому */
+    flex-grow: 1; /* Позволяет контейнеру расти в зависимости от содержимого */
+    color: #FFFFFF;
+}
+
+
+
+.loader5{
+  position: relative;
+  width: 150px;
+  height: 20px;
+  top: 45%;
+  top: -webkit-calc(50% - 10px);
+  top: calc(50% - 10px);
+  left: 25%;
+  left: -webkit-calc(50% - 75px);
+  left: calc(50% - 75px);
+  background-color: rgba(255,255,255,0.2);
+}
+
+.loader5:after{
+  content: "LOADING ...";
+  color: #fff;
+  font-family: Lato,"Helvetica Neue";
+  font-weight: 200;
+  font-size: 16px;
+  position: absolute;
+  width: 100%;
+  height: 20px;
+  line-height: 20px;
+  left: 0;
+  top: 0;
+}
+
+.loader5:before{
+  content: "";
+  position: absolute;
+  background-color: #fff;
+  top: 0px;
+  height: 20px;
+  width: 0px;
+  z-index: 0;
+  -webkit-transform-origin: 100% 0%;
+  transform-origin: 100% 0%;
+  -webkit-animation: loader5 7s ease-in-out infinite;
+  animation: loader5 7s ease-in-out infinite;
+}
+
+@-webkit-keyframes loader5{
+  0% { width: 0px; left: 0px }
+  48% { width: 100%; left: 0px }
+  50% { width: 100%; right: 0px }
+  52% { width: 100%; right: 0px }
+  100% { width: 0px; right: 0px }
+}
+
+@keyframes loader5{
+  0% { width: 0px; left: 0px }
+  48% { width: 100%; left: 0px }
+  50% { width: 100%; right: 0px }
+  52% { width: 100%; right: 0px }
+  100% { width: 0px; right: 0px }
+}
+
+.loader.--9::before,
+.loader.--9::after {
+	width: var(--size-dot);
+	height: var(--size-dot);
+	border-radius: 50%;
+	background-color: var(--color);
+	animation: loader-9 0.42s cubic-bezier(0.39, 0.31, 0, 1.11) infinite;
+}
+
+.loader.--9::before {
+	left: calc(50% - var(--size-dot) - 1.6vmin);
+}
+
+.loader.--9::after {
+	left: calc(50% + 1.6vmin);
+	animation-delay: 0.12s;
+}
+
+@keyframes loader-9 {
+	0%, 100% {
+		opacity: 0;
+	}
+	
+	0% {
+		transform: translate(-4vmin, -4vmin);
+	}
+	
+	66% {
+		opacity: 1;
+	}
+	
+	66%, 100% {
+		transform: none;
+	}
+}
+
+.vertical-centered-box {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content {
+  position: relative; /* Добавлено для корректного позиционирования */
+  width: 120px;
+  height: 120px;
+}
+
+.loader-circle {
+  position: absolute;
+  top: 0; /* Центрируем круг */
+  left: 0; /* Центрируем круг */
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  animation: rotate 1.2s infinite linear;
+}
+
+.loader-line-mask {
+  position: absolute;
+  top: 0; /* Центрируем маску */
+  left: 0; /* Центрируем маску */
+  width: 120px;
+  height: 120px;
+  overflow: hidden;
+  transform-origin: center;
+  mask-image: linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0)); /* Восстановлено */
+  animation: rotate 1.2s infinite linear;
+}
+
+.loader-line {
+  position: absolute;
+  top: 0; /* Указываем точное положение */
+  left: 0; /* Указываем точное положение */
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Выравнивание по правому краю */
+  margin-top: 20px;
+}
+
+.radio-group h3 {
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+/* .option-wrapper {
+  margin-bottom: 10px;
+} */
+
+.option-label {
+  display: flex;
+  align-items: center;
+}
+
+.option-label input {
+  margin-right: 10px;
+}
+
+.option-label {
+  display: flex;
+  align-items: center; /* Вертикальное выравнивание */
+  justify-content: center; /* Горизонтальное выравнивание */
+  height: 100%; /* Убедитесь, что контейнер имеет фиксированную высоту */
+  text-align: center; /* Центрирование текста */
+  padding: 10px; /* Добавляет отступы внутри контейнера */
+  box-sizing: border-box; /* Учитывает отступы и границы в общей ширине элемента */
+}
+
+
+.main-container {
+  display: flex; /* Используем Flexbox для создания двух колонок */
+  justify-content: space-between; /* Разделяем элементы по всей ширине контейнера */
+  padding: 20px; /* Внутренние отступы */
+  margin: 20px; /* Внешние отступы */
+}
+
+#salary-spending {
+  background: rgba(73, 81, 146, 0.7);
+  border-radius: 30px;
+  padding: 20px; /* Внутренние отступы */
+  box-shadow: 0 0 10px #381eff;
+  width: auto; /* Ширина блока */
+
+  color: #343a40; /* Темно-серый цвет текста */
+}
+
+#salary-spending p {
+  margin: 10px 0; /* Отступы между параграфами */
+  font-size: 16px; /* Размер шрифта */
+  line-height: 1.5; /* Межстрочный интервал */
+}
+
+#salary-spending p.salary {
+  color: #28a745; /* Зеленый цвет для зарплаты */
+  font-weight: bold; /* Жирный шрифт для зарплаты */
+}
+
+#salary-spending p.spending {
+  color: #eb6774; /* Красный цвет для трат */
+  font-weight: bold; /* Обычный шрифт для трат */
+}
+
+#earnings {
+  background: rgba(73, 81, 146, 0.7);
+  display: flex; /* Используем Flexbox */
+  justify-content: center; /* Центрируем по горизонтали */
+  align-items: center; /* Центрируем по вертикали */
+  padding: 10px;
+  line-height: 1; /* Устанавливаем высоту строки равной размеру шрифта */
+  border-radius: 30px;
+  box-shadow: 0 0 10px #381eff;
+  color: rgb(253, 247, 247);
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  position: relative; /* Используем относительное позиционирование для родительского контейнера */
+  width: auto; /* Ширина блока */
+  font-size: 16px; /* Размер шрифта */
+  white-space: nowrap; /* Предотвращаем перенос текста */
+}
+
+#earnings p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.container, .row, .col {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Adjust padding and line-height in the dark theme as well */
+.dark-theme #earnings {
+  background: rgba(34, 34, 34, 0.62);
+  border-color: #444;
+  box-shadow: 0 0 10px #1eff4e;
+}

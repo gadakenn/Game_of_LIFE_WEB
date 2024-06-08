@@ -1,9 +1,3 @@
-document.addEventListener('DOMContentLoaded', function() {
-  console.log(sessionStorage.getItem('currentRoundIndex'));
-  loadRoundData();
-
-  
-});
 
 
 
@@ -16,36 +10,128 @@ const formatter = new Intl.NumberFormat('ru-RU', {
 
 document.getElementById('next-round').addEventListener('click', function() {
   loadRoundData(true);
+  
+  // Запрос для обновления баланса
   fetch('../../Game/process_answers.php?action=getBalancePage')
   .then(response => response.json())
   .then(data => {
       if(data.balance) {
-
           // Обновляем значение баланса на странице
           document.getElementById('earnings').innerHTML =
               `<p>Текущий баланс: ${formatter.format(data.balance).replace(',', '.')} руб.</p>`;
       } else {
-          // Обрабатываем ошибку
           console.error('Ошибка: ', data.error);
       }
   })
   .catch(error => {
       console.error('Ошибка при запросе баланса: ', error);
   });
+
+  document.getElementById('salary-spending').style.display = 'none';
+  // Запрос для обновления salary-spending
+  fetch('../../Game/process_answers.php?action=getSalarySpending')
+  .then(response => response.json())
+  .then(data => {
+      if((data.salary && data.salary.length > 0) || (data.spending && data.spending.length > 0)) {
+          let salarySpendingHTML = '';
+
+          // Формируем HTML для зарплаты
+          for (const [source, amount] of Object.entries(data.salary)) {
+            salarySpendingHTML += `<p class="salary">${source}: +${formatter.format(amount[0]).replace(',', '.')} руб.</p>`;
+          }
+
+        // Формируем HTML для трат
+          for (const [source, amount] of Object.entries(data.spending)) {
+              salarySpendingHTML += `<p class="spending">${source}: -${formatter.format(amount[0]).replace(',', '.')} руб.</p>`;
+          }
+
+          // Обновляем содержимое контейнера
+          document.getElementById('salary-spending').style.display = 'initial';
+          document.getElementById('salary-spending').innerHTML = salarySpendingHTML;
+      } else {
+          document.getElementById('salary-spending').style.display = 'none';
+          console.log(': ', data.error);
+      }
+  })
+  .catch(error => {
+      console.error('Ошибка при запросе данных salary-spending: ', error);
+  });
 });
 
-// Загружает данные для текущего раунда
-function loadRoundData(next = false) {
-  console.log(sessionStorage.getItem('currentRoundIndex'));
-  console.log(next);
-  const url = next ? '../../Game/get_game_data.php?action=roundData&next=true' : '../../Game/get_game_data.php?action=roundData';
-  fetch(url)
-    .then(response => response.json())
-    .then(data => {
-      updateUIForRound(data);
-    })
-    .catch(error => console.error('Ошибка при получении данных:', error));
+
+
+
+async function loadRoundData(next = false) {
+  const loadingElement = document.getElementById('loading');
+  const questionContainer = document.getElementById('question');
+  const inputsContainer = document.getElementById('answers-form');
+  const nextRoundButton = document.getElementById('next-round');
+  // Проверка наличия элемента загрузки и контейнера вопроса
+  if (!loadingElement || !questionContainer) {
+    console.error('Необходимые элементы не найдены!');
+    return;
+  }
+
+  // Показать элемент загрузки и скрыть контейнер вопроса
+  loadingElement.style.display = 'flex';
+  inputsContainer.style.display = 'none';
+  nextRoundButton.style.display = 'none';
+  questionContainer.style.display = 'none'; // Скрываем контейнер вопроса во время загрузки
+
+
+  try {
+    const url = next ? '../../Game/get_game_data.php?action=roundData&next=true' : '../../Game/get_game_data.php?action=roundData';
+    const response = await fetch(url);
+    const data = await response.json();
+    updateUIForRound(data);
+
+    // Скрыть элемент загрузки и показать обновлённый контейнер вопроса
+    loadingElement.style.display = 'none';
+    inputsContainer.style.display = 'block';
+    questionContainer.style.display = 'block'; // Показываем обновленный контейнер вопроса
+  } catch (error) {
+    console.error('Ошибка при получении данных:', error);
+    loadingElement.style.display = 'none'; // Скрыть элемент загрузки в случае ошибки
+  }
 }
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  // if 
+  // document.getElementById('salary-spending').style.display = 'none'; // надо сделать, что если пустой, то не показывать
+  particleground(document.getElementById('particles-foreground'), {
+    dotColor: 'rgba(255, 255, 255, 1)',
+    lineColor: 'rgba(255, 255, 255, 0.05)',
+    minSpeedX: 0.3,
+    maxSpeedX: 0.6,
+    minSpeedY: 0.3,
+    maxSpeedY: 0.6,
+    density: 50000, // One particle every n pixels
+    curvedLines: false,
+    proximity: 250, // How close two dots need to be before they join
+    parallaxMultiplier: 10, // Lower the number is more extreme parallax
+    particleRadius: 4, // Dot size
+  });
+
+  particleground(document.getElementById('particles-background'), {
+    dotColor: 'rgba(255, 255, 255, 0.5)',
+    lineColor: 'rgba(255, 255, 255, 0.05)',
+    minSpeedX: 0.075,
+    maxSpeedX: 0.15,
+    minSpeedY: 0.075,
+    maxSpeedY: 0.15,
+    density: 30000, // One particle every n pixels
+    curvedLines: false,
+    proximity: 20, // How close two dots need to be before they join
+    parallaxMultiplier: 20, // Lower the number is more extreme parallax
+    particleRadius: 2, // Dot size
+  });
+  loadRoundData();
+});
+
+
+
+
 
 // тут скрипт для новостей
 let newsSingleAll = document.querySelectorAll(".news-container .news-single");
@@ -110,6 +196,10 @@ function calculateMonthlyPayment(propertyPrice, initialPayment, interestRate) {
 function updateUIForRound(data) {
   console.log(data);
   const questionContainer = document.getElementById('question');
+  if (!data || !data.question) {
+    questionContainer.innerHTML = "<p>Вопрос отсутствует или произошла ошибка.</p>";
+    return;
+  }
   const form = document.getElementById('answers-form');
   const newsContainer = document.querySelector('.news-container');
   const newsFeed = document.querySelector('.news');
@@ -173,7 +263,7 @@ function updateUIForRound(data) {
           const initialPayment = parseInt(this.value); // Текущее значение первоначального взноса
       
           // Обновляем текст метки с первоначальным взносом
-          initialPaymentLabel.children[1].textContent = ` ${this.value}`;
+          initialPaymentLabel.children[1].textContent = `${formatter.format(this.value).replace(',', '.')} руб.`;
       
           // Рассчитываем и отображаем ежемесячный платеж
           const monthlyPayment = calculateMonthlyPayment(propertyPrice, initialPayment, interestRate);
@@ -184,6 +274,7 @@ function updateUIForRound(data) {
       const monthlyPaymentDisplay = document.createElement('div');
       monthlyPaymentDisplay.id = 'monthlyPaymentDisplay';
       monthlyPaymentDisplay.innerHTML = '<strong>Ежемесячный платёж:</strong> 0 руб.';
+      wrapper.classList.add('input-wrapper');
       wrapper.appendChild(monthlyPaymentDisplay);
         wrapper.appendChild(initialPaymentInput);
         wrapper.appendChild(initialPaymentLabel);
@@ -199,6 +290,7 @@ function updateUIForRound(data) {
       const label = document.createElement('label');
       label.innerHTML = option.option_text;
       const input = document.createElement('input');
+      wrapper.classList.add('input-wrapper');
       input.type = 'number';
       input.name = `option_${option.id}`;
       input.required = true;
@@ -235,7 +327,7 @@ function updateUIForRound(data) {
       } else if (option.type === 'fill_num') {
         const label = document.createElement('label');
         const input = document.createElement('input');
-
+        wrapper.classList.add('input-wrapper');
         label.innerHTML = option.option_text;
         input.type = 'number';
         input.name = `option_${option.id}`;
@@ -289,6 +381,7 @@ function updateUIForRound(data) {
       } else if (option.type === 'fill_num') {
         const label = document.createElement('label');
         const input = document.createElement('input');
+        wrapper.classList.add('input-wrapper');
 
         label.innerHTML = option.option_text;
         input.type = 'number';
@@ -315,9 +408,139 @@ function updateUIForRound(data) {
         label.className = 'options-title';
         wrapper.appendChild(label);
         optionsContainer.appendChild(wrapper);
-      }
+      } 
     }); 
     initializeNews();
+  } else if (data.type === 'gpt') {
+    const label = document.createElement('label');
+    const textarea = document.createElement('textarea');
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('input-wrapper');
+
+    label.innerHTML = data.message;
+    textarea.name = `gpt`;
+    textarea.required = true;
+    textarea.classList.add('wide-textarea'); // Добавляем класс wide-textarea
+    inputsContainer.label = 'Введите ответ в свободной форме.';
+    wrapper.appendChild(label);
+    wrapper.appendChild(textarea);
+    inputsContainer.appendChild(wrapper);
+    
+  } else if (data.type === 'player_info') {
+    data.options.forEach(option => {
+      const wrapper = document.createElement('div');
+       // Класс для стилизации, если нужен
+    
+       if (option.type === 'radio') {
+        // Создаем контейнер для группы радио-кнопок
+        let radioGroup = document.getElementById('sex-radio-group');
+        if (!radioGroup) {
+            radioGroup = document.createElement('div');
+            radioGroup.id = 'sex-radio-group';
+            radioGroup.classList.add('radio-group');
+    
+            // Создаем заголовок для радио-кнопок
+            const heading = document.createElement('h3');
+            heading.innerText = 'Пол';
+            radioGroup.appendChild(heading);
+        }
+    
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('option-wrapper');
+    
+        const label = document.createElement('label');
+        label.classList.add('option-label');
+    
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'sex';
+        input.value = `option_${option.id}`;
+        input.required = true;
+    
+        // Добавляем радио-кнопку в label
+        label.appendChild(input);
+    
+        // Добавляем HTML содержимое (список) в label после радио-кнопки
+        const contentWrapper = document.createElement('span');
+        contentWrapper.innerHTML = option.option_text;
+        label.appendChild(contentWrapper);
+    
+        wrapper.appendChild(label);
+        radioGroup.appendChild(wrapper);
+    
+        optionsContainer.appendChild(radioGroup);
+    
+        
+      } else if (option.type === 'fill_text') {
+        const label = document.createElement('label');
+        const textarea = document.createElement('textarea');
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('input-wrapper');
+    
+        label.innerHTML = option.option_text;
+        textarea.name = `option_${option.id}`;
+        textarea.required = true;
+        textarea.classList.add('wide-textarea'); // Добавляем класс wide-textarea
+    
+        wrapper.appendChild(label);
+        wrapper.appendChild(textarea);
+        inputsContainer.appendChild(wrapper);
+    
+      } else if (option.type === 'country') {
+        const label = document.createElement('label');
+        const input = document.createElement('input');
+        wrapper.classList.add('input-wrapper');
+
+        label.innerHTML = option.option_text;
+        input.type = 'text';
+        input.name = `option_${option.id}`;
+        input.required = true;
+        input.placeholder = 'Введите страну'
+
+        wrapper.appendChild(label);
+        wrapper.appendChild(input);
+        inputsContainer.appendChild(wrapper);
+      } else if (option.type === 'fin') {
+        // Создаем контейнер для группы радио-кнопок
+        let radioGroup = document.getElementById('radio-group');
+        if (!radioGroup) {
+            radioGroup = document.createElement('div');
+            radioGroup.id = 'radio-group';
+            radioGroup.classList.add('radio-group');
+    
+            // Создаем заголовок для радио-кнопок
+            const heading = document.createElement('h3');
+            heading.innerText = 'Уровень риска в финансовых решениях';
+            radioGroup.appendChild(heading);
+        }
+    
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('option-wrapper');
+    
+        const label = document.createElement('label');
+        label.classList.add('option-label'); // Класс для стилизации, если нужен
+    
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'risk_level';
+        input.value = `option_${option.id}`;
+        input.required = true;
+    
+        // Добавляем радио-кнопку в label
+        label.appendChild(input);
+    
+        // Добавляем HTML содержимое (список) в label после радио-кнопки
+        const contentWrapper = document.createElement('span'); // Дополнительный элемент для стилизации содержимого
+        contentWrapper.innerHTML = option.option_text;
+        label.appendChild(contentWrapper);
+    
+        wrapper.appendChild(label);
+        radioGroup.appendChild(wrapper);
+    
+        optionsContainer.appendChild(radioGroup);
+    }
+    
+    });
   }
 
 
@@ -325,7 +548,8 @@ function updateUIForRound(data) {
   const submitButtonContainer = document.createElement('div');
   submitButtonContainer.className = 'submit-button-container';
   const submitButton = document.createElement('button');
-  submitButton.textContent = 'Отправить ответы';
+  submitButton.classList.add('submit-answer');
+  submitButton.textContent = 'Отправить ответ';
   submitButtonContainer.appendChild(submitButton);
   form.appendChild(submitButtonContainer);
 
@@ -342,7 +566,8 @@ function handleSubmit(form, roundId) {
   // Обработка ответа игрока
   const formData = new FormData(form);
   formData.append('roundId', roundId); // Добавляем ID раунда для серверной обработки
-
+  const loadingElement = document.getElementById('loading');
+  loadingElement.style.display = 'flex';
   console.log("FormData:", Object.fromEntries(formData.entries()));
 
   fetch('../../Game/process_answers.php?action=answerProcessing', { // Серверный скрипт для обработки ответов
@@ -358,10 +583,14 @@ function handleSubmit(form, roundId) {
   .then(data => {
     if (data.error) {
       // Показываем сообщение об ошибке
+      loadingElement.style.display = 'none';
       alert('Ошибка: ' + data.error);
     } else {
       console.log(data);
+      loadingElement.style.display = 'none';
       // Показываем заработок за раунд
+      const nextRoundButton = document.getElementById('next-round');
+      nextRoundButton.style.display = 'block';
       alert(data.message);
       if (data.endGame) {
         // Тут подсвечиваем кнопку для окончания игры, если раунд оказался последним
@@ -378,8 +607,10 @@ function handleSubmit(form, roundId) {
 
 
 function showEndGameButton() {
+  const nextRoundButton = document.getElementById('next-round');
+  nextRoundButton.style.display = 'none';
   const endGameButton = document.getElementById('end-game-button');
-  endGameButton.style.display = 'block'; // Сделать кнопку видимой
+  endGameButton.style.display = 'flex'; // Сделать кнопку видимой
 
   // Устанавливаем обработчик события, если он еще не был установлен
   if (!endGameButton.getAttribute('listener')) {

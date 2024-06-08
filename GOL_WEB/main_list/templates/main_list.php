@@ -22,7 +22,9 @@ if (isset($_SESSION['user'])) {
   
 </head>
 <body>
-    <div class="blur-background"></div>
+    <div id="particles-background" class="blur-background"></div>
+    <div id="particles-foreground" class="blur-background"></div>
+
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container-fluid">
     
@@ -81,7 +83,7 @@ if (isset($_SESSION['user'])) {
         <button id="start-new-game" class="btn">
             <span>Начать новую игру</span>
         </button>
-        <h3>Ваши игры</h3>
+        <h3>Все игры:</h3>
     </div>
     <main class="table" id="customers_table">
     <section class="table__body">
@@ -89,7 +91,7 @@ if (isset($_SESSION['user'])) {
             <thead>
                 <tr>
                     <th> ID <span class="icon-arrow">&UpArrow;</span></th>
-                    <th> Название <span class="icon-arrow">&UpArrow;</span></th>
+                    <th> Игрок <span class="icon-arrow">&UpArrow;</span></th>
                     <th> Счёт <span class="icon-arrow">&UpArrow;</span></th>
                     <th> Дата <span class="icon-arrow">&UpArrow;</span></th>
                 </tr>
@@ -128,10 +130,12 @@ if (isset($_SESSION['user'])) {
 </main>
 
 
-    <script src="../static/js/bootstrap.bundle.min.js"></script>
+    <!-- <script src="../static/js/bootstrap.bundle.min.js"></script> -->
 
     <script src="../static/js/theme-switch.js"></script>
     <script src="../static/js/table_script.js"></script>
     <script src="../static/js/news_ticker.js"></script>
+    <script src="../static/js/jquery.particleground.js"></script>
+
 </body>
 </html>
