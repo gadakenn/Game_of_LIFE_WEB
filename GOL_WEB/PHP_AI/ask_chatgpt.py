@@ -1,7 +1,7 @@
 import time
 from openai import OpenAI
 
-API_KEY = 'sk-proj-9HO758MQGFBqN9DCAQ0cT3BlbkFJuUTJqqOQn7IXQ1lC3sGe'
+
 
 class ChatGPTSession:
     def __init__(self, client, assistant_id, previous_rounds=[]):
@@ -56,7 +56,6 @@ class ChatGPTSession:
         return answer
 
 # thread = 'thread_0uSuJpcUtAZ8SMnxLk2j4reJ'
-client = OpenAI(api_key=API_KEY)
 
 # print(client.beta.threads.messages.list(
 #     thread_id=thread
