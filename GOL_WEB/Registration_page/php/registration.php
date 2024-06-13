@@ -1,6 +1,7 @@
 <?php
-require_once '../../Game/game.php';
 session_start();
+require_once '../../Game/game.php';
+
 class UserHandler {
     private $db;
 
