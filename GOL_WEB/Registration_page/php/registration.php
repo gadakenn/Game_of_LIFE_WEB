@@ -8,7 +8,7 @@ class UserHandler {
     public function __construct() {
         $host = getenv('MYSQLHOST');       
         $user = getenv('MYSQLUSER');      
-        $pass = getenv('MYSQLPASSWORD');  
+        $pass = getenv('MYSQL_ROOT_PASSWORD');  
         $dbname = getenv('MYSQLDATABASE');
         $port = getenv('MYSQLPORT');  
         $this->db = new mysqli($host, $user, $pass, $dbname, $port);
