@@ -51,4 +51,4 @@ if (isset($_GET['action'])) {
         echo end_game();
     }
 }
-?>
+

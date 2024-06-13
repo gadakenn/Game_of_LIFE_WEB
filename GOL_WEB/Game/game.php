@@ -1240,6 +1240,3 @@ class QuestionsRound extends Round {
     }
 
 }
-?>
-
-
