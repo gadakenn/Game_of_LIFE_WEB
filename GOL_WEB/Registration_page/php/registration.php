@@ -4,8 +4,13 @@ session_start();
 class UserHandler {
     private $db;
 
-    public function __construct($dbHost, $dbUser, $dbPass, $dbName) {
-        $this->db = new mysqli($dbHost, $dbUser, $dbPass, $dbName, 8889);
+    public function __construct() {
+        $host = getenv('MYSQLHOST');       
+        $user = getenv('MYSQLUSER');      
+        $pass = getenv('MYSQLPASSWORD');  
+        $dbname = getenv('MYSQLDATABASE');
+        $port = getenv('MYSQLPORT');  
+        $this->db = new mysqli($host, $user, $pass, $dbname, $port);
         if ($this->db->connect_error) {
             die("Connection failed: " . $this->db->connect_error);
         }
@@ -69,7 +74,7 @@ class UserHandler {
 }
 
 
-$userHandler = new UserHandler('localhost', 'root', 'root', 'GOL_web_bd');
+$userHandler = new UserHandler();
 // var_dump($_POST);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'];
