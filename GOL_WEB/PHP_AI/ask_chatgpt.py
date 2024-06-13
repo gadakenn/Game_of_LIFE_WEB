@@ -55,16 +55,3 @@ class ChatGPTSession:
         print(answer)
         return answer
 
-
-# if __name__ == "__main__":
-#     from api_keys import API_KEY, ASSIST_ID
-#     client = OpenAI(api_key=API_KEY)
-#     print(API_KEY)
-#     # assistant_id = 'asst_cglpEtrf39z1AAzdAHw4MbzK'
-    
-#     session = ChatGPTSession(client, ASSIST_ID)
-
-#     while True:
-#         print("Введите запрос:")
-#         user_msg = input()
-#         session.ask_assistant(user_msg)

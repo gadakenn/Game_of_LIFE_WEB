@@ -3,6 +3,8 @@ import time
 from ask_chatgpt import ChatGPTSession
 from api_keys import API_KEY, ASSIST_ID
 from openai import OpenAI
+import os
+
 
 app = Flask(__name__)
 app.secret_key = '180320044002'
@@ -95,4 +97,5 @@ def process_answer():
 
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=8000)
+    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 8000)))
+

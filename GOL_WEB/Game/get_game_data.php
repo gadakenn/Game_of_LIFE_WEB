@@ -90,7 +90,7 @@ function updateBalanceDB($gameId, $currentRoundId) {
 }
 
 function call_chatgpt($data) {
-    $url = 'http://localhost:8000/run_chatgpt';
+    $url = 'http://game_of_life_web.railway.internal:8000/run_chatgpt';
 
     $options = array(
         'http' => array(

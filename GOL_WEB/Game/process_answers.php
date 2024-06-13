@@ -61,7 +61,7 @@ function answerProcessing() {
 }
 
 function call_chatgpt_answer($data) {
-    $url = 'http://localhost:8000/process_answer';
+    $url = 'http://game_of_life_web.railway.internal:8000/process_answer';
 
     $options = array(
         'http' => array(
