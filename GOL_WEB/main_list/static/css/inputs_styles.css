@@ -30,7 +30,9 @@
     color: #FFFFFF;
 }
 
-
+.dark-theme .option-wrapper {
+  background-color: rgba(63, 144, 52, 0.503);
+}
 
 
 #question {
@@ -45,7 +47,9 @@
 }
 
 
-
+.dark-theme #question {
+  background-color: rgb(63, 144, 52, 0.503)
+}
 
 h1, h2 {
     text-align: center; /* Центрирует текст внутри заголовка */
@@ -85,6 +89,10 @@ h1, h2 {
     box-sizing: border-box; /* Убедиться, что ширина учитывает отступы */
     background-color: #c2a5c663;
     color: white;
+}
+
+.dark-theme .inputs-container input {
+  border: 1px solid rgba(63, 144, 52, 0.674);
 }
 
 .wide-textarea {
@@ -217,7 +225,9 @@ h1, h2 {
     color: #FFFFFF;
 }
 
-
+.dark-theme .input-wrapper {
+  background-color: rgba(63, 144, 52, 0.503);
+}
 
 .loader5{
   position: relative;
@@ -373,6 +383,8 @@ h1, h2 {
   flex-direction: column;
   align-items: center; /* Выравнивание по правому краю */
   margin-top: 20px;
+  margin-right: 20px;
+  margin-left: 20px;
 }
 
 .radio-group h3 {
@@ -380,9 +392,7 @@ h1, h2 {
   text-align: center;
 }
 
-/* .option-wrapper {
-  margin-bottom: 10px;
-} */
+
 
 .option-label {
   display: flex;
@@ -475,3 +485,178 @@ h1, h2 {
   border-color: #444;
   box-shadow: 0 0 10px #1eff4e;
 }
+
+.hint-container {
+  z-index: 10;
+}
+
+.hint-wrapper {
+  position: absolute;
+  top: 830px;
+  left: 70px;
+  width: 150px;
+  border: 1px solid rgba(20, 196, 227, 0.691);
+  border-radius: .5rem;
+  box-shadow: 0 0 10px #6edbbe;
+  padding: 20px;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  cursor: pointer;
+  transition: width 0.5s ease, height 0.5s ease;
+  background-color: rgba(174, 117, 182, 0.488);
+  color: #FFFFFF;
+  }
+
+  .hint-label {
+    font-weight: bold;
+    display: block; /* Делаем элемент блочным */
+    margin: 0 auto; /* Центрируем элемент */
+    text-align: center;
+  }
+  
+  .hint-text {
+    display: none;
+    margin-top: 10px;
+  }
+  
+  .hint-wrapper.show .hint-text {
+    display: block;
+  }
+  
+  .hint-wrapper.show {
+    width: 600px; /* задайте нужную ширину при раскрытии */
+   
+    background-color: rgb(174, 117, 182);
+  }
+
+
+  .gpt-wrapper {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: -100px;
+    color: whitesmoke;
+    }
+    
+  
+  .gpt-label {
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .reload-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .reload-button img {
+    display: inline-block;
+    transition: transform 0.6s ease-in-out;
+  }
+  
+  .reload-button:active img {
+    animation: spin 0.6s ease-in-out;
+  }
+
+  
+  .reload-icon {
+    width: 20px;
+    height: 20px;
+    filter: invert(34%) sepia(94%) saturate(1442%) hue-rotate(169deg) brightness(93%) contrast(101%);
+  }
+  
+  .reload-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .modalbg {
+    position: fixed;
+    
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(0,0,0,0);
+    z-index: 99999;
+    transition: all 2s ease-out;
+    transition-delay: .2s;
+    display: block;
+    pointer-events: none;
+  }
+  
+  .modalbg:target {
+    display: block;
+    pointer-events: auto;
+    background: rgba(4, 10 ,30, .8);
+    transition: all .8s ease-out;
+  }
+  
+  .dialog {
+    width: 400px;
+    position: relative;
+    top: -1000px;
+    margin: 10% auto;
+    padding: 5px 20px 13px 20px;
+    background: rgba(90, 42, 97, 1);
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #000;
+    transition: top .8s ease-out;
+    transition-delay: .2s;
+    color: white;
+  }
+  
+  .modalbg:target .dialog {
+    top: -20px;
+    transition: top .8s ease-out;
+    transition-delay: .2s;
+  }
+  
+  .close {
+    background: #7e3d7a;
+    color: #FFFFFF;
+    line-height: 25px;
+    position: absolute;
+    right: -12px;
+    text-align: center;
+    top: -10px;
+    width: 20px;
+    height: 20px; /* Установим высоту, чтобы квадрат SVG выглядел корректно */
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 12px;
+    box-shadow: 0 0 10px #6edbbe;
+    transition: all .2s ease-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .close img {
+    width: 100%;
+    height: 100%;
+  }
+  .close:hover {
+    background: #00d9ff;
+  }
+  
+  
+  
+  
+  

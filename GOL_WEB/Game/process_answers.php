@@ -50,8 +50,8 @@ function answerProcessing() {
 
     if (isset($_SESSION['game'])) { 
         $game = unserialize($_SESSION['game']);
-        if (isset($answer['message'])) {
-            $game->holdAnswer($game->getCurrentRoundIndex(), $answer['message']);
+        if (isset($answer['info_to_gpt'])) {
+            $game->holdAnswer($game->getCurrentRoundIndex(), $answer['info_to_gpt']);
         }
     }
 

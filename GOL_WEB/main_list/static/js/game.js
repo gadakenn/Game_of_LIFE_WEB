@@ -58,47 +58,103 @@ document.getElementById('next-round').addEventListener('click', function() {
   });
 });
 
-
-
-
-async function loadRoundData(next = false) {
-  const loadingElement = document.getElementById('loading');
-  const questionContainer = document.getElementById('question');
-  const inputsContainer = document.getElementById('answers-form');
-  const nextRoundButton = document.getElementById('next-round');
-  // Проверка наличия элемента загрузки и контейнера вопроса
-  if (!loadingElement || !questionContainer) {
-    console.error('Необходимые элементы не найдены!');
-    return;
+function showModal(message) {
+	const modal = document.getElementById('customModal');
+	const modalMessage = document.getElementById('modalMessage');
+	modalMessage.textContent = message;
+	window.location.hash = "customModal";
+  
+	// Закрытие модального окна при клике на "X"
+	document.querySelector('.close').addEventListener('click', function() {
+	  window.location.hash = "close";
+	});
   }
-
-  // Показать элемент загрузки и скрыть контейнер вопроса
-  loadingElement.style.display = 'flex';
-  inputsContainer.style.display = 'none';
-  nextRoundButton.style.display = 'none';
-  questionContainer.style.display = 'none'; // Скрываем контейнер вопроса во время загрузки
+  
+  
 
 
-  try {
-    const url = next ? '../../Game/get_game_data.php?action=roundData&next=true' : '../../Game/get_game_data.php?action=roundData';
-    const response = await fetch(url);
-    const data = await response.json();
-    updateUIForRound(data);
+async function loadRoundData(next = false, gptReload = false) {
+	const loadingElement = document.getElementById('loading');
+	const questionContainer = document.getElementById('question');
+	const inputsContainer = document.getElementById('answers-form');
+	const nextRoundButton = document.getElementById('next-round');
+	
+	// Проверка наличия элемента загрузки и контейнера вопроса
+	if (!loadingElement || !questionContainer) {
+	  console.error('Необходимые элементы не найдены!');
+	  return;
+	}
+  
+	// Показать элемент загрузки и скрыть контейнер вопроса
+	loadingElement.style.display = 'flex';
+	inputsContainer.style.display = 'none';
+	nextRoundButton.style.display = 'none';
+	questionContainer.style.display = 'none'; // Скрываем контейнер вопроса во время загрузки
+  
+	// Создаем элемент gptWrapper
+	let gptWrapper = document.querySelector('.gpt-wrapper');
+	if (!gptWrapper) {
+	  gptWrapper = document.createElement('div');
+	  gptWrapper.className = 'gpt-wrapper';
+	  document.body.appendChild(gptWrapper); // Добавляем gptWrapper в body
+	}
+  
+	try {
+	  let url = next ? '../../Game/get_game_data.php?action=roundData&next=true' : '../../Game/get_game_data.php?action=roundData';
+	  url = gptReload ? `../../Game/get_game_data.php?action=gptRoundData` : url;
+	  const response = await fetch(url);
+	  const data = await response.json();
+	  updateUIForRound(data);
 
-    // Скрыть элемент загрузки и показать обновлённый контейнер вопроса
-    loadingElement.style.display = 'none';
-    inputsContainer.style.display = 'block';
-    questionContainer.style.display = 'block'; // Показываем обновленный контейнер вопроса
-  } catch (error) {
-    console.error('Ошибка при получении данных:', error);
-    loadingElement.style.display = 'none'; // Скрыть элемент загрузки в случае ошибки
+	  // Скрыть элемент загрузки и показать обновлённый контейнер вопроса
+	  loadingElement.style.display = 'none';
+	  inputsContainer.style.display = 'block';
+	  questionContainer.style.display = 'block'; // Показываем обновленный контейнер вопроса
+	} catch (error) {
+	  console.error('Ошибка при получении данных:', error);
+	  loadingElement.style.display = 'none'; // Скрыть элемент загрузки в случае ошибки
+	  showReloadButton(gptWrapper);
+	}
   }
-}
-
+  
+  function showReloadButton(container) {
+	console.log('Запуск showReloadButton');
+	// Проверка, есть ли уже кнопка перезагрузки
+	if (document.querySelector('.reload-button')) return;
+  
+	if (!container) {
+	  console.error('Container not found');
+	  return;
+	}
+  
+	const reloadButton = document.createElement('button');
+	reloadButton.className = 'reload-button';
+	reloadButton.innerHTML = '<img src="../static/css/reload-arrow-svgrepo-com.svg" alt="reload" />';
+	reloadButton.addEventListener('click', () => {
+	  loadRoundData(false, true);
+	});
+	console.log('Добавление кнопки перезагрузки');
+	container.appendChild(reloadButton);
+  }
 
 document.addEventListener('DOMContentLoaded', () => {
   // if 
   // document.getElementById('salary-spending').style.display = 'none'; // надо сделать, что если пустой, то не показывать
+  showModal('Это тестовое сообщение.');
+    window.showAnalysis = function(element) {
+      var analysisText = element.getAttribute('data-analysis');
+      var analysisContainer = document.getElementById('analysis-container');
+      analysisContainer.innerHTML = analysisText;
+      analysisContainer.style.display = 'block';
+  };
+
+  document.addEventListener('click', function(event) {
+      var analysisContainer = document.getElementById('analysis-container');
+      var newsLinks = document.querySelectorAll('.news-single');
+      if (!analysisContainer.contains(event.target) && !Array.from(newsLinks).some(link => link.contains(event.target))) {
+          analysisContainer.style.display = 'none';
+      }
+  });
   particleground(document.getElementById('particles-foreground'), {
     dotColor: 'rgba(255, 255, 255, 1)',
     lineColor: 'rgba(255, 255, 255, 0.05)',
@@ -204,18 +260,27 @@ function updateUIForRound(data) {
   const newsContainer = document.querySelector('.news-container');
   const newsFeed = document.querySelector('.news');
   newsContainer.style.display = 'none';
+
   console.log(data.roundId);
 
   questionContainer.innerHTML = data.question;
 
   form.innerHTML = ''; // Очищаем форму от предыдущих элементов
   newsFeed.innerHTML = '';
+  
+
+  
 
   const optionsContainer = document.createElement('div');
   optionsContainer.className = 'options-container';
 
   const inputsContainer = document.createElement('div');
   inputsContainer.className = 'inputs-container';
+  // Создаем контейнер для подсказок
+  const hintContainer = document.createElement('div');
+  hintContainer.className = 'hint-container';
+  hintContainer.style.display = 'none';
+  form.appendChild(hintContainer);
   form.appendChild(optionsContainer);
   form.appendChild(inputsContainer);
 
@@ -342,21 +407,59 @@ function updateUIForRound(data) {
         wrapper.appendChild(label);
         form.appendChild(wrapper);
       } else if (option.type === 'hint') {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'hint-wrapper';
+
         const label = document.createElement('label');
-        label.innerHTML = option.option_text;
+        label.className = 'hint-label';
+        label.innerHTML = '<strong>ПОДСКАЗКА</strong>';
         wrapper.appendChild(label);
-        form.appendChild(wrapper);
-      } 
+
+        const hintText = document.createElement('div');
+        hintText.className = 'hint-text';
+        hintText.innerHTML = option.option_text;
+        wrapper.appendChild(hintText);
+
+        // Добавляем обработчик события клика для показа/скрытия подсказки
+        wrapper.addEventListener('click', () => {
+          wrapper.classList.toggle('show');
+        });
+
+        hintContainer.appendChild(wrapper);
+        hintContainer.style.display = 'flex';
+      }
     }); 
   } else if (data.type == 'news_round') { // тут делаем вывод для раунда, в котором необходимо анализировать новости
     const newsFeed = document.querySelector('.news');
     newsContainer.style.display = 'flex'; // показываем новостную ленту
     let flag = true;
-    data.options.forEach(option => {
-      const wrapper = document.createElement('div');
-       // Класс для стилизации, если нужен
+    let radioGroup;
+    let radioGroupCount = 0;
     
-      if (option.type === 'radio') {
+    data.options.forEach((option, index) => {
+      const wrapper = document.createElement('div');
+      // Класс для стилизации, если нужен
+    
+      if (option.type === 'text') {
+        // Создаем новый контейнер для радио-группы
+      
+        optionsContainer.appendChild(wrapper);
+
+        // Создаем новый контейнер для радио-группы
+        radioGroup = document.createElement('div');
+        radioGroup.id = `radio-group-${Math.floor(index / 3)}`;
+        radioGroup.classList.add('radio-group');
+        radioGroupCount = 0;
+        const heading = document.createElement('h3');
+        heading.innerHTML = option.option_text;
+        radioGroup.appendChild(heading);
+        optionsContainer.appendChild(radioGroup);
+    
+      } else if (option.type === 'radio') {
+        // Если нет активного radioGroup, создаем новый
+      
+    
+        // Добавляем радио-кнопку в текущий контейнер
         wrapper.classList.add('option-wrapper');
         const label = document.createElement('label');
         label.classList.add('option-label'); // Класс для стилизации, если нужен
@@ -376,18 +479,28 @@ function updateUIForRound(data) {
         label.appendChild(contentWrapper);
     
         wrapper.appendChild(label);
-        optionsContainer.appendChild(wrapper);
-        
+        if (radioGroup) {
+          radioGroup.appendChild(wrapper);
+          radioGroupCount++;
+          optionsContainer.appendChild(radioGroup);
+        } else {
+          optionsContainer.appendChild(wrapper);
+        }
+    
+        // Если в текущем контейнере достигнуто 3 радио-кнопки, сбрасываем radioGroup
+        if (radioGroupCount >= 3) {
+          radioGroup = null;
+        }
       } else if (option.type === 'fill_num') {
         const label = document.createElement('label');
         const input = document.createElement('input');
         wrapper.classList.add('input-wrapper');
-
+    
         label.innerHTML = option.option_text;
         input.type = 'number';
         input.name = `option_${option.id}`;
         input.required = true;
-
+    
         wrapper.appendChild(label);
         wrapper.appendChild(input);
         inputsContainer.appendChild(wrapper);
@@ -402,15 +515,11 @@ function updateUIForRound(data) {
         newsFeed.appendChild(newsLink);
         newsFeed.appendChild(document.createTextNode(' '));
         flag = false;
-      } else if (option.type === 'text') {
-        const label = document.createElement('label');
-        label.innerHTML = option.option_text;
-        label.className = 'options-title';
-        wrapper.appendChild(label);
-        optionsContainer.appendChild(wrapper);
-      } 
+      }
     }); 
     initializeNews();
+    
+
   } else if (data.type === 'gpt') {
     const label = document.createElement('label');
     const textarea = document.createElement('textarea');
@@ -584,14 +693,14 @@ function handleSubmit(form, roundId) {
     if (data.error) {
       // Показываем сообщение об ошибке
       loadingElement.style.display = 'none';
-      alert('Ошибка: ' + data.error);
+      showModal('Ошибка: ' + data.error);
     } else {
       console.log(data);
       loadingElement.style.display = 'none';
       // Показываем заработок за раунд
       const nextRoundButton = document.getElementById('next-round');
       nextRoundButton.style.display = 'block';
-      alert(data.message);
+      showModal(data.message);
       if (data.endGame) {
         // Тут подсвечиваем кнопку для окончания игры, если раунд оказался последним
         showEndGameButton();
@@ -601,7 +710,7 @@ function handleSubmit(form, roundId) {
   .catch(error => {
     // Ловим ошибки в сетевом запросе или ошибки парсинга JSON
     console.error('Ошибка при отправке ответов:', error);
-    alert('Произошла ошибка при отправке данных. Проверьте консоль для деталей.');
+    showModal('Произошла ошибка при отправке данных. Проверьте консоль для деталей.');
   });
 }
 
@@ -634,7 +743,7 @@ function endGame() {
       window.location.href = 'main_list.php';
     } else {
       // Если произошла ошибка, сообщаем о ней пользователю
-      alert('Ошибка при завершении игры: ' + data.error);
+      showModal('Ошибка при завершении игры: ' + data.error);
     }
   })
   .catch(error => {

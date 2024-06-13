@@ -7,25 +7,26 @@ class Game {
     public $game_name;
     public $game_id;
 
-    private $money_to_append = 0;
 
     public $current_age = 12;
 
-    private $answerInfo = '';
+    private $storyToGPT = '';
 
     private $rounds_for_gpt = [];
 
-    public $flag = 'NO';
+    public $flag = true;
     private $numRounds;
 
     private $tmp_answer = [];
 
-    
+
+
+
     private $roundClasses = [
         0 => ['QuestionsRound'],
-        1 => ['SummerBusinessRound', 'SchoolWeekRound'],
-        2 => ['BetsRound'],
-        3 => ['EducationRound'],
+        1 => ['gpt', 'gpt'],
+        2 => ['gpt'],
+        3 => ['gpt'],
         4 => ['StockBondsDeps'],
         5 => ['StartupInvestmentRound', 'SelfTaughtBusinessRound', 'CollegeClubRound'],
         6 => ['CareerRound'],
@@ -126,7 +127,6 @@ class Game {
     
         // Устанавливаем обновленный массив раундов
         $this->setRounds($initialRounds);
-        $this->flag = 'YES';
         return $this->getRounds();
     }
 
@@ -160,7 +160,7 @@ class Game {
 
     public function holdAnswer($taskNum, $taskText, $push=false) {
         if ($push) {
-            $this->addRoundGPT($this->tmp_answer['taskNum'], $this->tmp_answer['content'], 'assistant', false, true);
+            $this->makeInfoToGPT($this->tmp_answer['content']);
         } else {
             $this->tmp_answer = [
                 "taskNum" => $taskNum,
@@ -171,9 +171,18 @@ class Game {
 
     public function getRoundGPT() {
         return $this->rounds_for_gpt;
-        
     }
+
+    private function makeInfoToGPT($text) {
+        $this->storyToGPT = $this->storyToGPT . "{$text}";
+    }
+
+    public function getStory() {
+        return $this->storyToGPT;
+    }
+
 }
+
 
 class User {
     private $name;
@@ -508,21 +517,21 @@ class SummerBusinessRound extends Round {
 
         $this->businessOptions = [
             'option_10' => [
-                'name' => 'lemonade_stand',
+                'name' => 'Торговля лимонадом',
                 'initial_cost' => 100,
                 'profit_per_good_day' => 30,
                 'profit_per_bad_day' => 10,
                 'weather_coefficient' => 1.2 // Более высокая прибыль в жаркие дни
             ],
             'option_11' => [
-                'name' => 'bike_car_wash',
+                'name' => 'Ручная мойка машин',
                 'initial_cost' => 150,
                 'profit_per_good_day' => 10, // Уменьшенная прибыль за хороший день
                 'profit_per_bad_day' => 20, // Повышение прибыли в дни после дождей
                 'weather_coefficient' => 0.5 // Понижающий коэффициент из-за плохой погоды
             ],
             'option_12' => [
-                'name' => 'home_baking',
+                'name' => 'Приготовление домашней выпечки',
                 'initial_cost' => 200,
                 'profit_per_good_day' => 50,
                 'profit_per_bad_day' => 20,
@@ -577,7 +586,8 @@ class SummerBusinessRound extends Round {
             'goodWeatherDays' => $goodWeatherDays,
             'investment' => $investment,
             'advertising' => $advertising,
-            'extraCosts' => $extraCosts
+            'extraCosts' => $extraCosts,
+            'info_to_gpt' => "Открывал летний мини-бизнес {$business['name']} и заработал на нём {$totalEarnings}."
         ];
     }
 
@@ -621,7 +631,8 @@ class StartupInvestmentRound extends Round {
                 'risk_level' => 'high',
                 'ROI' => 0.35, // 35%
                 'CAC' => 50, // $50
-                'LTV' => 600
+                'LTV' => 600,
+                'name' => 'Умные чехлы для телефонов'
             ],
             'option_20' => [ // эко технологии
                 'market_volume' => 3000000000,
@@ -629,7 +640,8 @@ class StartupInvestmentRound extends Round {
                 'risk_level' => 'high',
                 'ROI' => 0.50, // 50%
                 'CAC' => 70, // $70
-                'LTV' => 500
+                'LTV' => 500,
+                'name' => 'Эко-технологии'
             ],
             'option_21' => [ // онлайн-школа
                 'market_volume' => 2000000000,
@@ -637,7 +649,8 @@ class StartupInvestmentRound extends Round {
                 'risk_level' => 'high',
                 'ROI' => 0.20, // 20%
                 'CAC' => 30, // $30
-                'LTV' => 700
+                'LTV' => 700,
+                'name' => 'Онлайн-школа'
             ]
         ];
 
@@ -688,7 +701,8 @@ class StartupInvestmentRound extends Round {
             'totalProfitFromCustomers' => $totalProfitFromCustomers,
             'message' => "Ваш стартап приносит {$riskAdjustedProfit}.\nОжидаемый ROI: {$expectedROI}.\nКоличество покупателей: {$totalCustomers}.\n",
             'selectedStartup' => $selectedStartup,
-            'investmentAmount' => $investmentAmount
+            'investmentAmount' => $investmentAmount,
+            'info_to_gpt' => "В унивеситете занялся стартапом вместе с одногруппниками, выбрав тему {$startup['name']}, что принесло ему {$riskAdjustedProfit} c ROI: {$expectedROI}."
         ];
     }
     
@@ -849,12 +863,7 @@ class EducationRound extends Round {
             $_SESSION['game'] = serialize($game);
             $this->result = [
                 'message' => "Вы выбрали {$education['name']}.\nСтоимость обучения: {$cost}.\nОжидаемая зарплата: {$education['expected_salary']}",
-                'cost' => $cost,
-                'expected_salary' => $education['expected_salary'],
-                'rounds' => $game->getRounds(),
-                'answer' => $answer,
-                'bus' => $this->availableEducationBusinesses,
-                'xxx' => $this->determineBusinessFuture($selectedEducation)
+                'info_to_gpt' => "После школы в качестве образования выбрал: {$education['name']}"
             ];
         } else {
             $this->result = [
@@ -896,7 +905,8 @@ class CareerRound extends Round {
         $this->result = [
             'message' => "Поздравляем! Вы начали карьеру в качестве {$selectedProfession}. Ваша начальная зарплата составляет {$this->determineSalary($selectedProfession)} рублей.",
             'profession' => $selectedProfession,
-            'salary' => $this->determineSalary($selectedProfession)
+            'salary' => $this->determineSalary($selectedProfession),
+            'info_to_gpt' => "Затем начал карьеру в качестве {$selectedProfession}."
         ];
     }
 
@@ -956,16 +966,17 @@ class HousingDecisionRound extends Round {
             $this->result = [
                 'message' => "Вы выбрали покупку квартиры в ипотеку. Первоначальный взнос: {$initialPayment} руб.\nПлатеж каждый раунд: {$monthlyExpense}",
                 'monthly_expense' => $monthlyExpense,
-                'home_ownership' => true
+                'home_ownership' => true,
+                'info_to_gpt' => "В качестве жилья взял квартиру в ипотеку с платой каждый раунд в $monthlyExpense."
             ];
         } else {
-            // Логика для продолжения аренды
             $monthlyExpense = $this->currentRent($user);
             $user->appendSpending('Аренда квартиры', $monthlyExpense, 100);
             $this->result = [
                 'message' => "Вы выбрали аренду жилья. Ваша арендная плата каждый раунд: $monthlyExpense руб.",
                 'monthly_expense' => $monthlyExpense,
-                'home_ownership' => false
+                'home_ownership' => false,
+                'info_to_gpt' => "В качестве жилья на первое время выбрал аренду с платой каждый раунд в $monthlyExpense руб."
             ];
         }
     }
@@ -1035,13 +1046,16 @@ class SelfTaughtBusinessRound extends Round {
         if ($totalProfit < 0) {
             $this->result = [
                 'message' => "Вы выбрали {$business['name']}, но неожиданно возникли расходы в размере {$unexpectedExpenses} руб., что привело к убыткам и закрытию бизнеса.",
-                'totalProfit' => $totalProfit
+                'totalProfit' => $totalProfit,
+                'info_to_gpt' => "Выбрал {$business['name']}, но неожиданно возникли расходы в размере {$unexpectedExpenses} руб., что привело к убыткам и закрытию бизнеса."
             ];
         } else {
             $user->earnMoney($totalProfit);
             $this->result = [
-                'message' => "Вы выбрали {$business['name']} и получили прибыль в размере {$totalProfit} руб. после учета всех расходов (непредвиденные расходы: {$unexpectedExpenses} и доходов.",
-                'totalProfit' => $totalProfit
+                'message' => "Вы выбрали {$business['name']} и получили прибыль в размере {$totalProfit} руб. после учета всех расходов (непредвиденные расходы: {$unexpectedExpenses}) и доходов.",
+                'totalProfit' => $totalProfit,
+                'info_to_gpt' => "Выбрал {$business['name']} и получил прибыль в размере {$totalProfit} руб. после учета всех расходов (непредвиденные расходы: {$unexpectedExpenses}) и доходов."
+
             ];
         }
     }
@@ -1131,13 +1145,15 @@ class CollegeClubRound extends Round {
         if ($totalProfit < 0) {
             $this->result = [
                 'message' => "Вы выбрали {$club['name']}, но неожиданно возникли расходы в размере {$unexpectedExpenses} руб., что привело к убыткам и закрытию клуба.",
-                'totalProfit' => $totalProfit
+                'totalProfit' => $totalProfit,
+                'info_to_gpt' => "В колледже открыл {$club['name']}, но неожиданно возникли расходы в размере {$unexpectedExpenses} руб., что привело к убыткам и закрытию клуба."
             ];
         } else {
             $user->earnMoney($totalProfit);
             $this->result = [
                 'message' => "Вы выбрали {$club['name']} и получили прибыль в размере {$totalProfit} руб. после учета всех расходов и доходов.",
-                'totalProfit' => $totalProfit
+                'totalProfit' => $totalProfit,
+                'info_to_gpt' => "В колледже открыл {$club['name']} и получил прибыль в размере {$totalProfit} руб. после учета всех расходов и доходов."
             ];
         }
     }
@@ -1220,68 +1236,10 @@ class QuestionsRound extends Round {
         // $game->addRoundGPT($game->getCurrentRoundIndex(), $info_to_gpt, 'user', true);
         // $_SESSION['game'] = serialize($game);
 
-        $this->result = ['message' => "Спасибо за предоставленную информацию! Хорошей игры!"];
+        $this->result = ['message' => "Спасибо за предоставленную информацию! Хорошей игры!", 'info_to_gpt' => $info_to_gpt];
     }
 
 }
-// Массивы раундов для различных типов образования
-
-// $selfTaughtRounds = ['selfTaughtBusinessRound', 'StartupInvestmentRound', 'adminRound'];
-
-// // Предположим, выбранное образование - самоучка
-// $selectedEducation = 'self_taught';
-// $replacementRound = 'selfTaughtBusinessRound';
-
-// $user = new User('hu', 4);
-// $game = new Game($user, 'test');
-
-
-// print_r($game->getRounds());
-
-// $game->setRounds(['test', 'test2', 'test3']);
-// print_r($game->getRounds());
-// // В зависимости от выбранного образования выбираем массив раундов
-// switch ($selectedEducation) {
-//     case 'university':
-//         $game->changeRound($selfTaughtRounds, $replacementRound);
-//         break;
-//     case 'college':
-//         $game->changeRound($selfTaughtRounds, $replacementRound);
-//         break;
-//     case 'online_courses':
-//         $game->changeRound($selfTaughtRounds, $replacementRound);
-//         break;
-//     case 'self_taught':
-//         $game->changeRound($selfTaughtRounds, $replacementRound);
-//         break;
-//     default:
-//         // Обработка неизвестного типа образования
-//         break;
-// }
-
-// print_r($game->getRounds());
-
-// $user = new User("John Doe", 1);
-// $user->earnMoney(500000); 
-
-// $round = new StartupInvestmentRound();
-
-// // Данные для тестирования
-// $testData = [
-//     'selected_startup' => 'smart_accessories',
-//     'investment_amount' => 500000  // Пользователь инвестирует $500,000
-// ];
-
-
-// // Запуск раунда с тестовыми данными
-// $round->play($user, $testData);
-
-// // Вывод результатов
-// echo "Results:\n";
-// print_r($round->getResult());
-
-// echo "User's final balance: " . $user->getBalance() . "\n";
-
 ?>
 
 

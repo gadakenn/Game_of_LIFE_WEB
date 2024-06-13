@@ -156,15 +156,17 @@ if (isset($_GET['action'])) {
 
             if ($round == 'gpt') {
                 $continue_with_gpt = true;
-                $roundsGPT = $game->getRoundGPT();
+                $roundsGPT = $game->getStory();
                 $age = $game->current_age;
                 $info_to_chatGPT = [
                     'age' => $age,
                     'story' => $roundsGPT,
-                    'user_id' => $user->getId()
+                    'user_id' => $user->getId(),
+                    'first' => $game->flag
                 ];
                 $roundInfo = call_chatgpt($info_to_chatGPT);
-                $game->addRoundGPT($currentRoundIndex, $roundInfo['question']);
+                // $game->addRoundGPT($currentRoundIndex, $roundInfo['question']);
+                $game->flag = false;
             } else {
                 $roundInfo = getRoundData($roundClasses[$round]);
                 $game->addRoundGPT($currentRoundIndex, $roundInfo['question']);
@@ -183,9 +185,25 @@ if (isset($_GET['action'])) {
             echo json_encode(getRoundData($roundClasses[$round]));
         }
     
-        // echo json_encode(getRoundData($roundClasses[$round]));
+       
     } elseif ($_GET['action'] == 'gamesData') {
         echo getGameData();
+    } elseif ($_GET['action'] == 'gptRoundData') {
+        $game = unserialize($_SESSION['game']);
+        $user = unserialize($_SESSION['user']);
+        $roundsGPT = $game->getStory();
+        $age = $game->current_age;
+        $info_to_chatGPT = [
+            'age' => $age,
+            'story' => $roundsGPT,
+            'user_id' => $user->getId(),
+            'first' => $game->flag
+        ];
+        $roundInfo = call_chatgpt($info_to_chatGPT);
+        $_SESSION['game'] = serialize($game);
+        $_SESSION['user'] = serialize($user);
+        echo json_encode(array_merge($roundInfo, $game->getRoundGPT()));
+
     }
 }
 

@@ -17,8 +17,12 @@ def get_chatgpt_session(data):
         chatgpt_session = ChatGPTSession(client=client, assistant_id=assistant_id)
         chatgpt_session.thread_id = thread_id
     else:
-        chatgpt_session = ChatGPTSession(client=client, assistant_id=assistant_id)
-        flask_session[data['user_id']] = {'chatgpt_thread': chatgpt_session.thread_id}
+        try:
+            chatgpt_session = ChatGPTSession(client=client, assistant_id=assistant_id)
+            flask_session[data['user_id']] = {'chatgpt_thread': chatgpt_session.thread_id}
+        except Exception as e:
+            return False
+        
     return chatgpt_session
 
 
@@ -27,13 +31,28 @@ def run_chatgpt():
     data = request.json
     print(data)
     session = get_chatgpt_session(data)
+    if not session:
+        return jsonify({'error': "Не смогли создать сессию. Попробуй reload"}), 500
+    
     answer = None
     max_retries = 3
+    if data['first']:
+        
+        prompt = f"Вот история предыдущих раундов игры и портрет игрока: '{data['story']}'. Герою теперь {data['age']} лет. \
+            Сгенерируй раунд, который будет связан с его жизнью и какими-либо обстоятельствами, \
+            которые потребуют от него решения задачи по микроэкономике, макроэкономике или финансовым\
+            рынкам (при генерации заданий используй файлы)."
+        
+    else:
+        
+        prompt = f"Герою теперь {data['age']} лет. Сгенерируй раунд, который будет связан с его \
+            жизнью и какими-либо обстоятельствами, которые потребуют от него решения задачи по микроэкономике, \
+            макроэкономике или финансовым рынкам (при генерации заданий используй файлы). \
+            Необходимо, чтобы раунд соотносился с историей того, что уже происходило в игре."
+            
     for attempt in range(max_retries):
         try:
-            answer = session.ask_assistant(
-                f"Герою теперь {data['age']} лет. Сгенерируй раунд, который будет связан с его жизнью и какими-либо обстоятельствами, которые потребуют от него решения задачи по микроэкономике, макроэкономике или финансовым рынкам (при генерации заданий используй файлы)."
-            )
+            answer = session.ask_assistant(prompt)
             if answer:  # Убедимся, что ответ не пустой
                 break
         except IndexError:

@@ -55,17 +55,14 @@ class ChatGPTSession:
         print(answer)
         return answer
 
-# thread = 'thread_0uSuJpcUtAZ8SMnxLk2j4reJ'
 
-# print(client.beta.threads.messages.list(
-#     thread_id=thread
-# ).data[0].content[0].text.value)
 # if __name__ == "__main__":
-
+#     from api_keys import API_KEY, ASSIST_ID
 #     client = OpenAI(api_key=API_KEY)
-#     assistant_id = 'asst_cglpEtrf39z1AAzdAHw4MbzK'
+#     print(API_KEY)
+#     # assistant_id = 'asst_cglpEtrf39z1AAzdAHw4MbzK'
     
-#     session = ChatGPTSession(client, assistant_id)
+#     session = ChatGPTSession(client, ASSIST_ID)
 
 #     while True:
 #         print("Введите запрос:")

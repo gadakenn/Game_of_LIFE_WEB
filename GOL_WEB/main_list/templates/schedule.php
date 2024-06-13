@@ -18,7 +18,8 @@ if (isset($_SESSION['user'])) {
 <head>
     <meta charset="UTF-8">
     <title>Game Of Life</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js" integrity="sha384-9S97vR39KQxFUlUJaM7E2hwK2zF8dLh1tTyb/0Ob4uJkMVb+tv6ZbtyP1imfj4jF" crossorigin="anonymous"></script>
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM CHTML">
+</script>
 
 </head>
 
@@ -131,6 +132,13 @@ if (isset($_SESSION['user'])) {
             <span>Следующий раунд</span>
         </button>
         <button id="end-game-button" class="btn" style="display: none;"><span>Завершить игру</span></button>
+    </div>
+    <div id="customModal" class="modalbg">
+    <div class="dialog">
+        <a href="#close" title="Закрыть" class="close"><img src="../static/css/close-svgrepo-com.svg" alt="reload" /></a>
+        <h2 id="modalTitle">Сообщение</h2>
+        <p id="modalMessage"></p>
+    </div>
     </div>
 
 
