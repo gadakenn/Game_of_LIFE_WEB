@@ -1183,7 +1183,7 @@ class SendAnswerToGPT extends Round {
     }
 
     private function call_chatgpt_answer($data) {
-        $url = 'http://localhost:8000/process_answer';
+        $url = 'https://gptservice-production.up.railway.app/process_answer';
     
         $options = array(
             'http' => array(
