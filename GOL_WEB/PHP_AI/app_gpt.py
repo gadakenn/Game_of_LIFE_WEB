@@ -32,7 +32,9 @@ def get_chatgpt_session(data):
 
 @app.route('/run_chatgpt', methods=['POST'])
 def run_chatgpt():
+    app.logger.debug(f"Request method: {request.method}")
     data = request.json
+    app.logger.debug(f"Request data: {data}")
     print(data)
     session = get_chatgpt_session(data)
     if not session:
