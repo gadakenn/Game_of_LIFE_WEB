@@ -75,6 +75,7 @@ class Game {
             throw new Exception("Round not found.");
         }
     }
+
     public function getCurrentRound() {
         if (isset($this->rounds[$this->currentRoundIndex])) {
             return $this->rounds[$this->currentRoundIndex];
@@ -200,7 +201,7 @@ class User {
     public function __construct($name, $id) {
         $this->name = $name;
         $this->id = $id;
-        $this->balance = 1200000;
+        $this->balance = 0;
     }
 
     public function earnMoney($amount=0, $execute=false) {
@@ -224,7 +225,7 @@ class User {
     }
 
     public function defaultBalance() {
-        $this->balance = 12000000;
+        $this->balance = 0;
     }
 
     public function getSalary() {
@@ -271,8 +272,8 @@ class User {
          */
         $totalAmountMoney = 0;
 
-        $plusMoney = $this->getSalary(); // предполагается, что это массив вида ['ключ' => [число1, число2]]
-        $minusMoney = $this->getSpending(); // аналогично
+        $plusMoney = $this->getSalary(); 
+        $minusMoney = $this->getSpending();
     
         // Обработка доходов
         foreach ($plusMoney as $key => $values) {
@@ -303,38 +304,21 @@ abstract class Round {
     protected $questions = [];
     protected $result;
 
-    public function addQuestion(Question $question) {
-        $this->questions[] = $question;
-    }
 
     abstract public function play(User $user, $data);
+                /**
+     * Основная функция для каждого раунда, которая выполняет расчеты на основе выбора игрока и затем возвращает сообщение об итогах раунда
+     * от выбора игрока
+     *
+     * @param User $user Информация о пользователе
+     * @param array $data Информация о выборе пользователя
+     */
 
     public function getResult() {
         return $this->result;
     }
 }
 
-class Question {
-    protected $questionText;
-    protected $answers; // Массив ответов или другая структура, в зависимости от типа вопроса
-
-    public function __construct($questionText) {
-        $this->questionText = $questionText;
-        $this->answers = [];
-    }
-
-    public function addAnswer($answer) {
-        $this->answers[] = $answer;
-    }
-
-    public function getQuestionText() {
-        return $this->questionText;
-    }
-
-    public function getAnswers() {
-        return $this->answers;
-    }
-}
 
 class MortgageCalculator {
     /**
@@ -363,7 +347,6 @@ class MortgageCalculator {
         return $monthlyPayment;
     }
 }
-
 
 
 
@@ -465,7 +448,7 @@ class StockBondsDeps extends Round {
             $this->adjustAndRoundPercentages();
         }
 
-        if ($totalPercentage > $this->maxPerc) {
+        if ($totalPercentage !== 100) {
             $this->result = ['error' => 'В сумме проценты должны давать 100!'];
             return;
         }
@@ -519,7 +502,7 @@ class SummerBusinessRound extends Round {
             'option_10' => [
                 'name' => 'Торговля лимонадом',
                 'initial_cost' => 100,
-                'profit_per_good_day' => 30,
+                'profit_per_good_day' => 15,
                 'profit_per_bad_day' => 10,
                 'weather_coefficient' => 1.2 // Более высокая прибыль в жаркие дни
             ],
@@ -527,14 +510,14 @@ class SummerBusinessRound extends Round {
                 'name' => 'Ручная мойка машин',
                 'initial_cost' => 150,
                 'profit_per_good_day' => 10, // Уменьшенная прибыль за хороший день
-                'profit_per_bad_day' => 20, // Повышение прибыли в дни после дождей
+                'profit_per_bad_day' => 10, // Повышение прибыли в дни после дождей
                 'weather_coefficient' => 0.5 // Понижающий коэффициент из-за плохой погоды
             ],
             'option_12' => [
                 'name' => 'Приготовление домашней выпечки',
                 'initial_cost' => 200,
                 'profit_per_good_day' => 50,
-                'profit_per_bad_day' => 20,
+                'profit_per_bad_day' => 10,
                 'weather_coefficient' => 1 // Не зависит от погоды
             ]
         ];
@@ -578,11 +561,11 @@ class SummerBusinessRound extends Round {
         $goodDayProfit = $business['profit_per_good_day'] * $goodWeatherDays * $business['weather_coefficient'] * 0.3;
         $badDayProfit = $business['profit_per_bad_day'] * ($daysCount - $goodWeatherDays) * $business['weather_coefficient'] * 0.3;
 
-        $totalEarnings = $investment * ($goodDayProfit + $badDayProfit) * (1 / $profitMultiplier) - $extraCosts * ($daysCount - $goodWeatherDays);
+        $totalEarnings = $investment * ($goodDayProfit + $badDayProfit) * (1 / $profitMultiplier) - $extraCosts * 0.5 * ($daysCount - $goodWeatherDays);
         $user->earnMoney($totalEarnings);
 
         $this->result = [
-            'message' => "Вы заработали {$totalEarnings} руб.\nСолнечных дней: {$goodWeatherDays}.",
+            'message' => "Вы заработали {$totalEarnings} руб.\nСолнечных дней в месяце: {$goodWeatherDays}.",
             'goodWeatherDays' => $goodWeatherDays,
             'investment' => $investment,
             'advertising' => $advertising,
@@ -702,7 +685,7 @@ class StartupInvestmentRound extends Round {
             'message' => "Ваш стартап приносит {$riskAdjustedProfit}.\nОжидаемый ROI: {$expectedROI}.\nКоличество покупателей: {$totalCustomers}.\n",
             'selectedStartup' => $selectedStartup,
             'investmentAmount' => $investmentAmount,
-            'info_to_gpt' => "В унивеситете занялся стартапом вместе с одногруппниками, выбрав тему {$startup['name']}, что принесло ему {$riskAdjustedProfit} c ROI: {$expectedROI}."
+            'info_to_gpt' => "В унивеситете занялся стартапом вместе с одногруппниками, выбрав тему {$startup['name']}, что принесло ему {$riskAdjustedProfit} c ROI: {$expectedROI}. "
         ];
     }
     
@@ -762,7 +745,7 @@ class BetsRound extends Round {
         // Вычитаем сумму ставки из баланса пользователя
         $user->earnMoney(-$betAmount);
 
-        // Получаем данные о матче и коэффициенте для выбранного исхода
+      
         $matchInfo = $this->matchOptions[$selectedOption];
         $winningCoefficient = $matchInfo['coefficient'];
         $winningAmount = $betAmount * $winningCoefficient;
@@ -782,10 +765,6 @@ class BetsRound extends Round {
                 'message' => "Вы проиграли ставку на матч: {$matchInfo['match']}.\nУбыток {$betAmount}"
             ];
         }
-
-        // Дополнительные детали о ставке
-        $this->result['selectedOption'] = $selectedOption;
-        $this->result['betAmount'] = $betAmount;
     }
 }
 
@@ -810,9 +789,9 @@ class EducationRound extends Round {
             case 'option_35':
                 return ['Техник', 'Дизайнер', 'Администратор'];
             case 'option_36':
-                return ['Программист', 'Веб-дизайнер', 'Маркетолог'];
+                return ['Копирайтер/Контент-менеджер', 'Веб-дизайнер', 'Маркетолог'];
             case 'option_37':
-                return ['Фрилансер', 'Стартапер'];
+                return ['Диджитал-иллюстратор', 'Фотограф'];
             default:
                 return [];
         }
@@ -829,7 +808,7 @@ class EducationRound extends Round {
             case 'option_37':
                 return 'SelfTaughtBusinessRound';
             default:
-                return '';
+                return 'SelfTaughtBusinessRound';
         }
     }
 
@@ -863,7 +842,7 @@ class EducationRound extends Round {
             $_SESSION['game'] = serialize($game);
             $this->result = [
                 'message' => "Вы выбрали {$education['name']}.\nСтоимость обучения: {$cost}.\nОжидаемая зарплата: {$education['expected_salary']}",
-                'info_to_gpt' => "После школы в качестве образования выбрал: {$education['name']}"
+                'info_to_gpt' => "После школы в качестве образования выбрал: {$education['name']}. "
             ];
         } else {
             $this->result = [
@@ -884,11 +863,11 @@ class CareerRound extends Round {
         "option_41" => "Техник",
         "option_42" => "Дизайнер",
         "option_43" => "Администратор",
-        "option_44" => "Программист",
+        "option_44" => "Копирайтер/Контент-менеджер",
         "option_45" => "Веб-дизайнер",
         "option_46" => "Маркетолог",
-        "option_47" => "Фрилансер",
-        "option_48" => "Стартапер"
+        "option_47" => "Диджитал-иллюстратор",
+        "option_48" => "Фотограф"
     ];
     
     public function play(User $user, $data) {
@@ -906,24 +885,24 @@ class CareerRound extends Round {
             'message' => "Поздравляем! Вы начали карьеру в качестве {$selectedProfession}. Ваша начальная зарплата составляет {$this->determineSalary($selectedProfession)} рублей.",
             'profession' => $selectedProfession,
             'salary' => $this->determineSalary($selectedProfession),
-            'info_to_gpt' => "Затем начал карьеру в качестве {$selectedProfession}."
+            'info_to_gpt' => "Затем начал карьеру в качестве {$selectedProfession}. "
         ];
     }
 
     private function determineSalary($profession) {
         // Логика для определения зарплаты в зависимости от выбранной профессии
         $salaries = [
-            'IT-специалист' => 60000,
-            'Инженер' => 50000,
-            'Менеджер' => 55000,
-            'Техник' => 35000,
-            'Дизайнер' => 40000,
+            'IT-специалист' => 100000,
+            'Инженер' => 80000,
+            'Менеджер' => 90000,
+            'Техник' => 40000,
+            'Дизайнер' => 80000,
             'Администратор' => 30000,
-            'Программист' => 45000,
+            'Копирайтер/Контент-менеджер' => 45000,
             'Веб-дизайнер' => 40000,
             'Маркетолог' => 38000,
-            'Фрилансер' => 30000,  // тут сделаем варьирование
-            'Стартапер' => 20000   // Зарплата может варьироваться
+            'Диджитал-иллюстратор' => 30000, 
+            'Фотограф' => 20000   
         ];
 
         return $salaries[$profession] ?? 0;
@@ -995,22 +974,22 @@ class SelfTaughtBusinessRound extends Round {
         $this->businessOptions = [
             'option_53' => [
                 'name' => 'Онлайн-магазин',
-                'initial_investment' => 900000,
-                'expected_profit' => 4500000,
+                'initial_investment' => 90000,
+                'expected_profit' => 450000,
                 'risk_level' => 'Высокий',
                 'growth_potential' => 'Высокий'
             ],
             'option_54' => [
                 'name' => 'Кофейня',
-                'initial_investment' => 1800000,
-                'expected_profit' => 3600000,
+                'initial_investment' => 180000,
+                'expected_profit' => 360000,
                 'risk_level' => 'Средний',
                 'growth_potential' => 'Средний'
             ],
             'option_55' => [
                 'name' => 'Студия по созданию контента для социальных сетей',
-                'initial_investment' => 1350000,
-                'expected_profit' => 6300000,
+                'initial_investment' => 135000,
+                'expected_profit' => 630000,
                 'risk_level' => 'Средний',
                 'growth_potential' => 'Высокий'
             ]
@@ -1047,14 +1026,14 @@ class SelfTaughtBusinessRound extends Round {
             $this->result = [
                 'message' => "Вы выбрали {$business['name']}, но неожиданно возникли расходы в размере {$unexpectedExpenses} руб., что привело к убыткам и закрытию бизнеса.",
                 'totalProfit' => $totalProfit,
-                'info_to_gpt' => "Выбрал {$business['name']}, но неожиданно возникли расходы в размере {$unexpectedExpenses} руб., что привело к убыткам и закрытию бизнеса."
+                'info_to_gpt' => "Выбрал {$business['name']}, но неожиданно возникли расходы в размере {$unexpectedExpenses} руб., что привело к убыткам и закрытию бизнеса. "
             ];
         } else {
             $user->earnMoney($totalProfit);
             $this->result = [
                 'message' => "Вы выбрали {$business['name']} и получили прибыль в размере {$totalProfit} руб. после учета всех расходов (непредвиденные расходы: {$unexpectedExpenses}) и доходов.",
                 'totalProfit' => $totalProfit,
-                'info_to_gpt' => "Выбрал {$business['name']} и получил прибыль в размере {$totalProfit} руб. после учета всех расходов (непредвиденные расходы: {$unexpectedExpenses}) и доходов."
+                'info_to_gpt' => "Выбрал {$business['name']} и получил прибыль в размере {$totalProfit} руб. после учета всех расходов (непредвиденные расходы: {$unexpectedExpenses}) и доходов. "
 
             ];
         }
@@ -1146,14 +1125,14 @@ class CollegeClubRound extends Round {
             $this->result = [
                 'message' => "Вы выбрали {$club['name']}, но неожиданно возникли расходы в размере {$unexpectedExpenses} руб., что привело к убыткам и закрытию клуба.",
                 'totalProfit' => $totalProfit,
-                'info_to_gpt' => "В колледже открыл {$club['name']}, но неожиданно возникли расходы в размере {$unexpectedExpenses} руб., что привело к убыткам и закрытию клуба."
+                'info_to_gpt' => "В колледже открыл {$club['name']}, но неожиданно возникли расходы в размере {$unexpectedExpenses} руб., что привело к убыткам и закрытию клуба. "
             ];
         } else {
             $user->earnMoney($totalProfit);
             $this->result = [
                 'message' => "Вы выбрали {$club['name']} и получили прибыль в размере {$totalProfit} руб. после учета всех расходов и доходов.",
                 'totalProfit' => $totalProfit,
-                'info_to_gpt' => "В колледже открыл {$club['name']} и получил прибыль в размере {$totalProfit} руб. после учета всех расходов и доходов."
+                'info_to_gpt' => "В колледже открыл {$club['name']} и получил прибыль в размере {$totalProfit} руб. после учета всех расходов и доходов. "
             ];
         }
     }
@@ -1163,8 +1142,6 @@ class CollegeClubRound extends Round {
 class SendAnswerToGPT extends Round {
 
     public function play(User $user, $data) {
-
-
         $game = unserialize($_SESSION['game']);
         $data_new = $game->getRoundGPT();
 
@@ -1177,8 +1154,16 @@ class SendAnswerToGPT extends Round {
         $answer = $this->call_chatgpt_answer($info_to_chatGPT);
         $game->addRoundGPT($game->getCurrentRoundIndex(), $data['gpt'], 'user');
         $game->addRoundGPT($game->getCurrentRoundIndex(), $answer['message']);
+
+        // Извлечение числового значения из ответа
+        $profit_or_loss = $this->extractProfitOrLoss($answer['message']);
+        if ($profit_or_loss !== null) {
+            $user->earnMoney($profit_or_loss);
+        }
+
         $this->result = [
-            'message' => $answer['message']
+            'message' => $answer['message'],
+            'profit_or_loss' => $profit_or_loss
         ];
     }
 
@@ -1203,20 +1188,34 @@ class SendAnswerToGPT extends Round {
         // Декодирование JSON-ответа
         $decoded_result = json_decode($result, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
-           
             return null;
         }
     
         return $decoded_result;
     }
+
+    // Функция для извлечения числового значения прибыли или убытка
+    private function extractProfitOrLoss($message) {
+        // Регулярное выражение для поиска числа
+        $pattern = '/Итог:\s*([+-]?[0-9.,]+)\s*(рублей|руб\.|руб)?/';
+        if (preg_match($pattern, $message, $matches)) {
+            // Удаляем запятые и точки, оставляем только одну точку для дробных чисел
+            $value = str_replace([',', ' '], '', $matches[1]);
+            $value = str_replace('.', '', substr($value, 0, strrpos($value, '.'))) . substr($value, strrpos($value, '.'));
+            return (float)$value;
+        }
+        return null;
+    }
 }
+
 
 
 class QuestionsRound extends Round {
     private $player_info;
-
-    private $sex_info = ['option_67' => 'Мужской',
-                        'option_68' => 'Женский'];
+    private $sex_info = [
+        'option_67' => 'Мужской',
+        'option_68' => 'Женский'
+    ];
     
     private $risk_info = [
         'option_71' => 'низкий',
@@ -1224,19 +1223,43 @@ class QuestionsRound extends Round {
         'option_73' => 'высокий'
     ];
 
+    // Определение категорий богатства и диапазонов начального капитала в рублях
+    private $wealth_categories = [
+        'poor' => [100000, 500000, 'Вы родились в бедной семье, где каждый рубль на счету.'],
+        'middle_class' => [500000, 2000000, 'Вы родились в семье среднего класса с устойчивым финансовым положением.'],
+        'wealthy' => [5000000, 20000000, 'Вы родились в богатой семье с высоким уровнем достатка.']
+    ];
+
+    // Функция генерации начального капитала и описания семьи
+    private function generateInitialCapitalAndDescription() {
+        $wealth_keys = array_keys($this->wealth_categories);
+        $random_category = $wealth_keys[array_rand($wealth_keys)];
+        $capital_range = $this->wealth_categories[$random_category];
+        $initial_capital = rand($capital_range[0], $capital_range[1]);
+        $family_description = $capital_range[2];
+        return [$initial_capital, $family_description];
+    }
+
     public function play(User $user, $data) {
         $sex = $this->sex_info[$data['sex']];
         $interests = $data['option_69'];
         $country = $data['option_70'];
         $risk_level = $this->risk_info[$data['risk_level']];
+        list($initial_capital, $family_description) = $this->generateInitialCapitalAndDescription();
+
         $info_to_gpt = "Информация об игроке. Пол: $sex. Интересы (описаны в свободной форме): '$interests'. 
-        Желаемая страна для игры: $country. Уровень рискованности в финансовых решениях: $risk_level";
+        Желаемая страна для игры: $country. Уровень рискованности в финансовых решениях: $risk_level. 
+        Начальный капитал: $initial_capital. Описание семьи: $family_description";
 
-        // $game = unserialize($_SESSION['game']);
-        // $game->addRoundGPT($game->getCurrentRoundIndex(), $info_to_gpt, 'user', true);
-        // $_SESSION['game'] = serialize($game);
+        $user->earnMoney($initial_capital);
 
-        $this->result = ['message' => "Спасибо за предоставленную информацию! Хорошей игры!", 'info_to_gpt' => $info_to_gpt];
+        $this->result = [
+            'message' => "Спасибо за предоставленную информацию! Хорошей игры! $family_description Ваш начальный капитал составляет $initial_capital рублей.",
+            'info_to_gpt' => $info_to_gpt,
+            'initial_capital' => $initial_capital
+        ];
     }
-
 }
+
+
+

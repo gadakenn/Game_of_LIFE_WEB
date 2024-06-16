@@ -164,3 +164,4 @@ if (isset($_GET['action'])) {
         echo getSalarySpending();
     }
 }
+
