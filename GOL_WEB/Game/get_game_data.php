@@ -6,8 +6,8 @@ error_reporting(E_ALL);
 header('Content-Type: application/json');
 require_once '../db_connect/config.php';
 require_once 'game.php';
+// session_start();
 session_start();
-
 function getRoundData($taskId) {
     $conn = dbConnect(); 
     $data = [];
@@ -59,10 +59,15 @@ function startGameDB($game) {
 }
 
 
-function updateBalanceDB($gameId, $currentRoundId) {
+function updateBalanceDB($gameId, $currentRoundId, $last=false) {
     $conn = dbConnect();
     $user = unserialize($_SESSION['user']);
-    $balance = $user->getBalance(); 
+    if ($last) {
+        $user->earnMoney(0, true);
+        $balance = $user->getBalance(); 
+    } else {
+        $balance = $user->getBalance(); 
+    }
     // Подготовка запроса на обновление
     $stmt = $conn->prepare("UPDATE games SET current_score = ?, cur_round_id = ? WHERE id = ?");
     if (!$stmt) {
@@ -70,7 +75,7 @@ function updateBalanceDB($gameId, $currentRoundId) {
         return false;
     }
 
-    // Привязка параметров к запросу
+ 
     $stmt->bind_param("iii", $balance, $currentRoundId, $gameId);
 
     // Выполнение запроса
@@ -90,11 +95,11 @@ function updateBalanceDB($gameId, $currentRoundId) {
 }
 
 function call_chatgpt($data) {
-    $url = 'http://localhost:8000/run_chatgpt';
+    $url = 'https://gptservice-production.up.railway.app/run_chatgpt';
 
     $options = array(
         'http' => array(
-            'header'  => "Content-type: application/json\r\n",
+            'header'  => "Content-type: application/json",
             'method'  => 'POST',
             'content' => json_encode($data),
         ),
@@ -116,6 +121,7 @@ function call_chatgpt($data) {
 
     return $decoded_result;
 }
+
 
 
 $roundClasses = [   // соотношение классов раундов и индексов из бд
@@ -162,7 +168,8 @@ if (isset($_GET['action'])) {
                     'age' => $age,
                     'story' => $roundsGPT,
                     'user_id' => $user->getId(),
-                    'first' => $game->flag
+                    'first' => $game->flag,
+                    'score' => $user->getBalance()
                 ];
                 $roundInfo = call_chatgpt($info_to_chatGPT);
                 // $game->addRoundGPT($currentRoundIndex, $roundInfo['question']);
@@ -206,5 +213,3 @@ if (isset($_GET['action'])) {
 
     }
 }
-
-?>

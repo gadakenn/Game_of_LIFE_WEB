@@ -61,7 +61,7 @@ function answerProcessing() {
 }
 
 function call_chatgpt_answer($data) {
-    $url = 'http://localhost:8000/process_answer';
+    $url = 'https://gptservice-production.up.railway.app/process_answer';
 
     $options = array(
         'http' => array(
@@ -164,3 +164,4 @@ if (isset($_GET['action'])) {
         echo getSalarySpending();
     }
 }
+
