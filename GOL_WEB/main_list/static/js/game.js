@@ -140,7 +140,7 @@ async function loadRoundData(next = false, gptReload = false) {
 document.addEventListener('DOMContentLoaded', () => {
   // if 
   // document.getElementById('salary-spending').style.display = 'none'; // надо сделать, что если пустой, то не показывать
-  showModal('Это тестовое сообщение.');
+
     window.showAnalysis = function(element) {
       var analysisText = element.getAttribute('data-analysis');
       var analysisContainer = document.getElementById('analysis-container');
