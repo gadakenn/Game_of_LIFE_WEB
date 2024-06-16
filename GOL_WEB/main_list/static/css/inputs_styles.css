@@ -603,14 +603,14 @@ h1, h2 {
   .modalbg:target {
     display: block;
     pointer-events: auto;
-    background: rgba(4, 10 ,30, .8);
+    background: rgba(82, 56, 100, 0.43);
     transition: all .8s ease-out;
   }
   
   .dialog {
-    width: 400px;
+    width: 1000px;
     position: relative;
-    top: -1000px;
+    top: -2000px;
     margin: 10% auto;
     padding: 5px 20px 13px 20px;
     background: rgba(90, 42, 97, 1);
@@ -620,6 +620,8 @@ h1, h2 {
     transition: top .8s ease-out;
     transition-delay: .2s;
     color: white;
+    overflow-y: auto; /* Добавлено для прокрутки */
+    max-height: 80vh; /* Ограничение максимальной высоты */
   }
   
   .modalbg:target .dialog {
@@ -633,9 +635,9 @@ h1, h2 {
     color: #FFFFFF;
     line-height: 25px;
     position: absolute;
-    right: -12px;
+    right: 10px;
     text-align: center;
-    top: -10px;
+    top: 10px;
     width: 20px;
     height: 20px; /* Установим высоту, чтобы квадрат SVG выглядел корректно */
     text-decoration: none;

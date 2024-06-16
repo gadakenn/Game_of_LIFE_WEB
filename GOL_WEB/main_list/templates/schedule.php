@@ -8,7 +8,7 @@ if (isset($_SESSION['user'])) {
     $spending = $user->getSpending(); // метод getBalance() должен быть определен в вашем классе User
 } else {
     // Пользователь не авторизован, поэтому делаем редирект на страницу входа или регистрации
-    header('Location: login.php');
+    header('Location: Registration_page/templates/registration.html');
     exit;
 }
 ?>
@@ -18,7 +18,18 @@ if (isset($_SESSION['user'])) {
 <head>
     <meta charset="UTF-8">
     <title>Game Of Life</title>
-    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM CHTML">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
+</script>
 </script>
 
 </head>
@@ -81,18 +92,23 @@ if (isset($_SESSION['user'])) {
 <div id="analysis-container" class="card" style="display:none;"></div>
     </div>
         <div class="main-container">
-            <div id="salary-spending">
-                <?php if(isset($salary) && is_array($salary)): ?>
+        <div id="salary-spending">
+            <?php if((isset($salary) && is_array($salary) && !empty($salary)) || (isset($spending) && is_array($spending) && !empty($spending))): ?>
+                <?php if(isset($salary) && is_array($salary) && !empty($salary)): ?>
                     <?php foreach($salary as $source => $amount): ?>
                         <p class="salary"><?php echo htmlspecialchars($source); ?>: <?php echo "+" . htmlspecialchars(number_format($amount[0], 2, '.', ' ')); ?> руб.</p>
                     <?php endforeach; ?>
                 <?php endif; ?>
-                <?php if(isset($spending) && is_array($spending)): ?>
+                <?php if(isset($spending) && is_array($spending) && !empty($spending)): ?>
                     <?php foreach($spending as $source => $amount): ?>
                         <p class="spending"><?php echo htmlspecialchars($source); ?>: <?php echo "-" . htmlspecialchars(number_format($amount[0], 2, '.', ' ')); ?> руб.</p>
                     <?php endforeach; ?>
                 <?php endif; ?>
-            </div>
+            <?php else: ?>
+                <p style="color: white;"><strong>Пока тут никаких доходов и расходов</strong></p>
+            <?php endif; ?>
+        </div>
+
 
             <div id="earnings">
                 <?php if(isset($balance)): ?>

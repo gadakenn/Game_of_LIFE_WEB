@@ -5,7 +5,7 @@ $username = 'Гость';
 
 if (isset($_SESSION['user'])) {
     $user = unserialize($_SESSION['user']);
-    $username = $user->getName(); // Измените этот метод в соответствии с вашим классом User
+    $username = $user->getName();
 }
 ?>
 
@@ -16,8 +16,21 @@ if (isset($_SESSION['user'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game of Life</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
+</script>
 
-    <link rel="stylesheet" href="../static/css/style.css">
+
+</script>    <link rel="stylesheet" href="../static/css/style.css">
 
   
 </head>
@@ -129,7 +142,20 @@ if (isset($_SESSION['user'])) {
     </section>
 </main>
 
-
+<div class="hint-container" style="display: flex;">
+<div class="hint-wrapper-main-list">
+    <label class="hint-label">
+    <strong>INFO</strong>
+</label>
+<div class="hint-text">
+<p><strong class="custom-highlight">Game Of Life</strong> - это уникальное веб-приложение, которое предлагает вам пройти несколько этапов (раундов), представляющих ключевые моменты жизни вашего персонажа. Каждый раунд представляет собой временную точку, например, 15, 20 лет и так далее. В каждом из них вам будут предложены различные экономические задачи, связанные с макро/микроэкономикой. Их решение будет позволять Вам преумножить игровой капитал.</p>
+    <p>Вы будете принимать решения по инвестициям в различные активы, такие как ставки, фондовый рынок, криптовалюты и недвижимость. Также у вас будет возможность читать новости текущей недели и принимать на их основе дополнительные инвестиционные решения.</p>
+    <p>Интересной особенностью игры является то, что в середине игры раунды будут генерироваться <strong class="custom-highlight">ИСКУССТВЕННЫМ ИНТЕЛЛЕКТОМ</strong>, добавляя элемент непредсказуемости и сложности.</p>
+    <p>Ваша основная цель - максимизировать капитал вашего персонажа к последнему раунду. Присоединяйтесь к нам и проверьте свои способности в мире финансовых решений и стратегий!</p>
+    <p>Начните свое приключение сейчас и посмотрите, сможете ли вы стать финансовым гением!</p>
+</div>
+</div>
+</div>
     <!-- <script src="../static/js/bootstrap.bundle.min.js"></script> -->
 
     <script src="../static/js/theme-switch.js"></script>
