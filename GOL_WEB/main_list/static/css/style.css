@@ -458,12 +458,23 @@ body {
 	background:
 		linear-gradient(var(--bg), var(--bg)) padding-box,
 		var(--glow),
-		linear-gradient(rgb(195, 189, 189), rgb(195, 189, 189)) border-box;
+		linear-gradient(rgb(175, 96, 153), rgba(216, 9, 206, 0.606)) border-box;
 	transition: background-size 0.24s;
 	touch-action: none;
 	position: relative;
 	padding: 1rem 2rem;
     color:rgb(114, 204, 195);
+}
+
+.dark-theme .btn {
+    background:
+        linear-gradient(rgb(61, 168, 120),rgb(61, 168, 120)) padding-box,
+        var(--glow),
+        linear-gradient(rgb(61, 168, 120), rgba(0, 243, 93, 0.606)) border-box;
+}
+
+.dark-theme .btn::before {
+    background: rgba(8, 103, 44, 0.425);
 }
 
 
@@ -508,7 +519,7 @@ body {
 }
 
 .dark-theme .btn span {
-    background: var(--glow), #ccc;
+    background: var(--glow), rgb(255, 255, 255);
     background-clip: text;
 	color: transparent;
 	height: 100%;
@@ -630,7 +641,7 @@ body {
 }
 
 .dark-theme .table__body {
-    background-color: #7bce7fa5;
+    background-color: #ffffff2a;
 }
 
 
@@ -664,7 +675,7 @@ thead th {
 }
 
 .dark-theme thead th {
-    background-color: #9ec39c;
+    background-color: #50C878;
 }
 
 tbody tr:nth-child(even) {
@@ -672,7 +683,7 @@ tbody tr:nth-child(even) {
 }
 
 .dark-theme tbody tr:nth-child(even) {
-    background-color: #9ec39c;
+    background-color: #50C878;
 }
 
 tbody tr {
@@ -682,7 +693,7 @@ tbody tr {
 }
 
 .dark-theme tbody tr {
-    background-color: #b4ecb2;
+    background-color: #90EE90;
 }
 
 tbody tr.hide {
@@ -696,7 +707,7 @@ tbody tr:hover {
 }
 
 .dark-theme tbody tr:hover {
-    background-color: rgba(62, 144, 52, 0.715) !important;
+    background-color: rgb(106, 155, 100) !important;
 }
 
 tbody tr td,
@@ -750,7 +761,7 @@ thead th:hover {
 }
 
 .dark-theme thead th:hover {
-    color: #499933;
+    color: #ffffff;
 }
 
 thead th.active span.icon-arrow{
@@ -1103,4 +1114,59 @@ body {
     cursor: pointer;
   }
   
+  .hint-container {
+    z-index: 101;
+  }
   
+  .hint-wrapper-main-list {
+    position: absolute;
+    top: 300px;
+    left: 70px;
+    width: 150px;
+    border: 1px solid rgba(20, 196, 227, 0.691);
+    border-radius: .5rem;
+    box-shadow: 0 0 10px #6edbbe;
+    padding: 20px;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    cursor: pointer;
+    transition: width 0.5s ease, height 0.5s ease;
+    background-color: rgba(174, 117, 182, 0.488);
+    color: #FFFFFF;
+    }
+  
+    .hint-label {
+      font-weight: bold;
+      display: block; /* Делаем элемент блочным */
+      margin: 0 auto; /* Центрируем элемент */
+      text-align: center;
+    }
+    
+    .hint-text {
+      display: none;
+      margin-top: 10px;
+    }
+    
+    .hint-wrapper-main-list.show .hint-text {
+      display: block;
+    }
+    
+    .hint-wrapper-main-list.show {
+      width: 1000px; /* задайте нужную ширину при раскрытии */
+      z-index: 101;
+      background-color: rgb(174, 117, 182);
+    }
+    @keyframes blink {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    
+    strong.custom-highlight {
+        color: #12eaea; /* Зеленый цвет */
+        font-weight: bold; /* Жирный шрифт */
+        animation: blink 1s infinite; /* Анимация мерцания */
+        
+    }
+    

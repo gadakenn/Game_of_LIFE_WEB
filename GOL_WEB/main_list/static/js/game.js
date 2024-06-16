@@ -9,7 +9,7 @@ const formatter = new Intl.NumberFormat('ru-RU', {
 });
 
 document.getElementById('next-round').addEventListener('click', function() {
-  loadRoundData(true);
+
   
   // Запрос для обновления баланса
   fetch('../../Game/process_answers.php?action=getBalancePage')
@@ -27,7 +27,7 @@ document.getElementById('next-round').addEventListener('click', function() {
       console.error('Ошибка при запросе баланса: ', error);
   });
 
-  document.getElementById('salary-spending').style.display = 'none';
+  
   // Запрос для обновления salary-spending
   fetch('../../Game/process_answers.php?action=getSalarySpending')
   .then(response => response.json())
@@ -46,27 +46,37 @@ document.getElementById('next-round').addEventListener('click', function() {
           }
 
           // Обновляем содержимое контейнера
-          document.getElementById('salary-spending').style.display = 'initial';
+          document.getElementById('salary-spending').style.display = 'flex';
           document.getElementById('salary-spending').innerHTML = salarySpendingHTML;
       } else {
-          document.getElementById('salary-spending').style.display = 'none';
           console.log(': ', data.error);
       }
   })
   .catch(error => {
       console.error('Ошибка при запросе данных salary-spending: ', error);
   });
+  loadRoundData(true);
 });
 
-function showModal(message) {
+function showModal(message, to_main=false) {
 	const modal = document.getElementById('customModal');
+  // modal.style.display = 'flex';
 	const modalMessage = document.getElementById('modalMessage');
-	modalMessage.textContent = message;
+	modalMessage.innerHTML = message;
 	window.location.hash = "customModal";
+
+  // После добавления содержимого вызываем MathJax для обработки возможных LaTeX выражений
+  MathJax.typesetPromise().then(() => {
+      console.log('MathJax завершил обработку.');
+  }).catch(err => console.error('Ошибка MathJax: ', err));
   
 	// Закрытие модального окна при клике на "X"
 	document.querySelector('.close').addEventListener('click', function() {
-	  window.location.hash = "close";
+    if (to_main) {
+      window.location.href = 'main_list.php';
+    } else {
+      window.location.hash = "close";
+    }
 	});
   }
   
@@ -118,7 +128,7 @@ async function loadRoundData(next = false, gptReload = false) {
   }
   
   function showReloadButton(container) {
-	console.log('Запуск showReloadButton');
+
 	// Проверка, есть ли уже кнопка перезагрузки
 	if (document.querySelector('.reload-button')) return;
   
@@ -140,7 +150,7 @@ async function loadRoundData(next = false, gptReload = false) {
 document.addEventListener('DOMContentLoaded', () => {
   // if 
   // document.getElementById('salary-spending').style.display = 'none'; // надо сделать, что если пустой, то не показывать
-
+    // showModal('Тевщапмшваомшщваоимшщишщапроиапщроишщвапим шщвапим шщваоим шщамвошщмшщваомшщваом ваомшщ овашщмошщваомва мшщро шещиапщи шщгаприщвапиршщва рмшщвармщвам');
     window.showAnalysis = function(element) {
       var analysisText = element.getAttribute('data-analysis');
       var analysisContainer = document.getElementById('analysis-container');
@@ -511,7 +521,7 @@ function updateUIForRound(data) {
         newsLink.innerHTML = option.option_text.split('*')[0];
         newsLink.setAttribute('data-analysis', option.option_text.split('*')[1]); // Добавляем аналитику как атрибут
         console.log(option.option_text.split('\n')[1]);
-        newsLink.onclick = function() { showAnalysis(this); }; // Добавляем обработчик события клика
+        newsLink.onclick = function() { showAnalysis(this); }; 
         newsFeed.appendChild(newsLink);
         newsFeed.appendChild(document.createTextNode(' '));
         flag = false;
@@ -525,16 +535,21 @@ function updateUIForRound(data) {
     const textarea = document.createElement('textarea');
     const wrapper = document.createElement('div');
     wrapper.classList.add('input-wrapper');
-
-    label.innerHTML = data.message;
+  
+    label.innerHTML = data.message; 
     textarea.name = `gpt`;
     textarea.required = true;
-    textarea.classList.add('wide-textarea'); // Добавляем класс wide-textarea
+    textarea.classList.add('wide-textarea'); 
     inputsContainer.label = 'Введите ответ в свободной форме.';
     wrapper.appendChild(label);
     wrapper.appendChild(textarea);
     inputsContainer.appendChild(wrapper);
-    
+  
+    // После добавления содержимого вызываем MathJax для обработки возможных LaTeX выражений
+    MathJax.typesetPromise().then(() => {
+      console.log('MathJax завершил обработку.');
+    }).catch(err => console.error('Ошибка MathJax: ', err));
+  
   } else if (data.type === 'player_info') {
     data.options.forEach(option => {
       const wrapper = document.createElement('div');
@@ -729,6 +744,8 @@ function showEndGameButton() {
 }
 
 function endGame() {
+  const loadingElement = document.getElementById('loading');
+  loadingElement.style.display = 'flex';
   fetch('../../Game/start_game.php?action=endGame', {
     method: 'POST',
     headers: {
@@ -740,9 +757,12 @@ function endGame() {
   .then(data => {
     if (data.success) {
       // Перенаправляем пользователя на главную страницу
-      window.location.href = 'main_list.php';
+      loadingElement.style.display = 'none';
+      showModal(data.message, true);
+      
     } else {
       // Если произошла ошибка, сообщаем о ней пользователю
+      loadingElement.style.display = 'none';
       showModal('Ошибка при завершении игры: ' + data.error);
     }
   })
