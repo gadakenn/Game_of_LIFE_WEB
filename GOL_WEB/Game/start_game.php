@@ -6,7 +6,7 @@ require_once 'get_game_data.php';
 function start_game() {
     $user = unserialize($_SESSION['user']);
     $user->clearUserInfo();
-    $game = new Game($user, $user->getName(), 10);
+    $game = new Game($user, $user->getName(), 14);
 
     $_SESSION['game'] = serialize($game);
 
