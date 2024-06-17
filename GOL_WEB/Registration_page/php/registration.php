@@ -46,7 +46,7 @@ class UserHandler {
         session_unset();
        
 
-        session_start();
+       
         $stmt = $this->db->prepare("SELECT * FROM `users` WHERE `nickname` = ? OR `email` = ?");
         $stmt->bind_param("ss", $login, $login);
         $stmt->execute();
