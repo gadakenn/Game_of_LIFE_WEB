@@ -24,7 +24,7 @@ class Game {
 
     private $roundClasses = [
         0 => ['QuestionsRound'],
-        1 => ['SummerBusinessRound', 'SchoolWeekRound'],
+        1 => ['SummerBusinessRound'],
         2 => ['BetsRound'],
         3 => ['EducationRound'],
         4 => ['StockBondsDeps'],
