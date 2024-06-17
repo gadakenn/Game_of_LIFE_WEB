@@ -159,17 +159,18 @@ if (isset($_GET['action'])) {
             $game->holdAnswer(0, '', true);
             $user->salarySpending();
             updateBalanceDB($game->game_id, $currentRoundIndex);
-
+            $money = $user->getBalance();
             if ($round == 'gpt') {
                 $continue_with_gpt = true;
                 $roundsGPT = $game->getStory();
                 $age = $game->current_age;
+                $money = $user->getBalance();
                 $info_to_chatGPT = [
                     'age' => $age,
                     'story' => $roundsGPT,
                     'user_id' => $user->getId(),
                     'first' => $game->flag,
-                    'score' => $user->getBalance()
+                    'score' => $money
                 ];
                 $roundInfo = call_chatgpt($info_to_chatGPT);
                 // $game->addRoundGPT($currentRoundIndex, $roundInfo['question']);
@@ -200,11 +201,13 @@ if (isset($_GET['action'])) {
         $user = unserialize($_SESSION['user']);
         $roundsGPT = $game->getStory();
         $age = $game->current_age;
+        $money = $user->getBalance();
         $info_to_chatGPT = [
             'age' => $age,
             'story' => $roundsGPT,
             'user_id' => $user->getId(),
-            'first' => $game->flag
+            'first' => $game->flag,
+            'score' => $money
         ];
         $roundInfo = call_chatgpt($info_to_chatGPT);
         $_SESSION['game'] = serialize($game);
